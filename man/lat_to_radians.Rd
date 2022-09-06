@@ -16,5 +16,5 @@ The latitude in radians.
 Convert latitude in degrees to radians.
 }
 \examples{
-lat_to_radians(90)
+lat_to_radians(45)
 }

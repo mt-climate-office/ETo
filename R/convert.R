@@ -6,12 +6,23 @@
 #' @export
 #'
 #' @examples
-#' lat_to_radians(90)
+#' lat_to_radians(45)
 lat_to_radians <- function(lat) {
   stopifnot(is.numeric(lat), abs(lat) <= 360)
   (pi/180)*lat
 }
 
+#' Convert radiation in watts per m^2 per day to MJ per m^2 per day.
+#'
+#' @param radiation Radiation in watts per m^2.
+#'
+#' @return Radiation in MJ per m^2.
+#' @export
+#'
+#' @examples
+#' wm2_to_mj(2)
 wm2_to_mj <- function(radiation) {
   radiation * 3600 * 24 * 1e-6
 }
+
+

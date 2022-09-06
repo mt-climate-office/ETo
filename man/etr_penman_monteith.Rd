@@ -23,6 +23,9 @@ etr_penman_monteith(lat, day, rh, temp, rad, ws, elev, reference = 0.23)
 
 \item{reference}{The albedo of the reference surface (defaults to 0.23 for grass)}
 }
+\value{
+Reference ET in mm per day.
+}
 \description{
 Calculate daily total reference ET at a given point.
 }

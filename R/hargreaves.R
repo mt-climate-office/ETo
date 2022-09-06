@@ -1,3 +1,15 @@
+#' Calculate reference ET using the Hargreaves method.
+#'
+#' @param tmin The minimum air temperature in deg C.
+#' @param tmax The maximum air temperature in deg C.
+#' @param tmean The average air temperature in deg C.
+#' @param lat The latitude of the measurements in deg C.
+#' @param day The julian day of the measurement. Can either be an integer or date object.
+#'
+#' @return Daily reference ET in mm day^-1
+#' @export
+#'
+#' @examples
 etr_hargreaves <- function(tmin, tmax, tmean, lat, day) {
 
   declination <- calc_solar_declination(day)

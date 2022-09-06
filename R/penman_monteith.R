@@ -9,7 +9,7 @@
 #' @param elev Elevation in meters.
 #' @param reference The albedo of the reference surface (defaults to 0.23 for grass)
 #'
-#' @return
+#' @return Reference ET in mm per day.
 #' @export
 #'
 #' @examples
@@ -30,7 +30,6 @@ etr_penman_monteith <- function(lat, day, rh, temp, rad, ws, elev, reference = 0
   svp_slope <- calc_svp_slope(temp)
   pressure <- calc_pressure(elev)
   psy <- calc_psychrometric_constant(pressure)
-
 
   ((0.408*svp_slope*(rad_net - 0)) + (psy*(900/(temp + 273)) * (ws * (sat_vapor_pressure - actual_vapor_pressure))))/
     (svp_slope + psy*(1+0.34*ws))
