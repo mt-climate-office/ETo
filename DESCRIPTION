@@ -1,11 +1,16 @@
 Package: ETo
-Title: What the Package Does (One Line, Title Case)
+Title: Daily Calculation of Reference ET
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+    person("Colin", "Brust", , "colin.brust@mso.umt.edu", role = c("aut", "cre"))
+Description: Utility functions for calculating point-based and spatial 
+    daily reference ET.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Imports: 
+    terra
