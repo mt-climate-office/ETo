@@ -8,11 +8,11 @@
 #' @examples
 #' calc_solar_declination(60)
 calc_solar_declination <- function(day) {
-  stopifnot(is.numeric(day) || inherits(day, 'Date'))
-  if (inherits(day, 'Date')) {
-    day <- as.numeric(format(day, '%j'))
+  stopifnot(is.numeric(day) || inherits(day, "Date"))
+  if (inherits(day, "Date")) {
+    day <- as.numeric(format(day, "%j"))
   }
-  0.409*sin((((2*pi)/365)*day)-1.39)
+  0.409 * sin((((2 * pi) / 365) * day) - 1.39)
 }
 
 #' Calculate the inverse relative distance between the earth and sun for a given day.
@@ -25,11 +25,11 @@ calc_solar_declination <- function(day) {
 #' @examples
 #' calc_inverse_relative_distance(60)
 calc_inverse_relative_distance <- function(day) {
-  stopifnot(is.numeric(day) || inherits(day, 'Date'))
-  if (inherits(day, 'Date')) {
-    day <- as.numeric(format(day, '%j'))
+  stopifnot(is.numeric(day) || inherits(day, "Date"))
+  if (inherits(day, "Date")) {
+    day <- as.numeric(format(day, "%j"))
   }
-  1+0.033*cos(((2*pi)/365)*day)
+  1 + 0.033 * cos(((2 * pi) / 365) * day)
 }
 
 #' Given the latitude and solar declination, calculate the sunset hour angle.
@@ -42,7 +42,7 @@ calc_inverse_relative_distance <- function(day) {
 #'
 #' @examples
 calc_sunset_hour_angle <- function(lat, declination) {
-  acos((-tan(lat)*tan(declination)))
+  acos((-tan(lat) * tan(declination)))
 }
 
 #' Calculate the theoretical extraterrestrial radiation at a given latitude.
@@ -56,7 +56,7 @@ calc_sunset_hour_angle <- function(lat, declination) {
 #'
 #' @examples
 calc_extraterrestrial_rad <- function(sunset_hour, lat, declination) {
-  ((24*60)/pi)*(0.0820*(sunset_hour*sin(lat)*sin(declination) + cos(lat)*cos(declination)*sin(sunset_hour)))
+  ((24 * 60) / pi) * (0.0820 * (sunset_hour * sin(lat) * sin(declination) + cos(lat) * cos(declination) * sin(sunset_hour)))
 }
 
 #' Calculate the clear sky radiation at a location given an elevation.
@@ -69,7 +69,7 @@ calc_extraterrestrial_rad <- function(sunset_hour, lat, declination) {
 #'
 #' @examples
 calc_clear_sky_radiation <- function(elev, extra_rad) {
-  (0.75 + ((2 * 10^-5)* elev)) * extra_rad
+  (0.75 + ((2 * 10^-5) * elev)) * extra_rad
 }
 
 #' Calculate the saturation vapor pressure given the daily average temperature.
@@ -81,7 +81,7 @@ calc_clear_sky_radiation <- function(elev, extra_rad) {
 #'
 #' @examples
 calc_sat_vapor_pressure <- function(temp) {
-  0.6108*exp((17.27*temp)/(temp + 237.3))
+  0.6108 * exp((17.27 * temp) / (temp + 237.3))
 }
 
 #' Calculate the actual vapor pressure given the saturation vapor pressure and relative humidity.
@@ -94,7 +94,7 @@ calc_sat_vapor_pressure <- function(temp) {
 #'
 #' @examples
 calc_act_vapor_pressure <- function(svp, rh) {
-  svp * (rh/100)
+  svp * (rh / 100)
 }
 
 #' Calculate fraction of radiation relative to clear sky radiation.
@@ -107,11 +107,16 @@ calc_act_vapor_pressure <- function(svp, rh) {
 #'
 #' @examples
 calc_radiation_fraction <- function(radiation, clear_sky) {
-  frac <- radiation/clear_sky
-  if (frac > 1) {
-    return(1)
-  } else {
+  frac <- radiation / clear_sky
+  if (inherits(frac, "SpatRaster")) {
+    frac[frac > 1] <- 1
     return(frac)
+  } else {
+    if (frac > 1) {
+      return(1)
+    } else {
+      return(frac)
+    }
   }
 }
 
@@ -126,7 +131,7 @@ calc_radiation_fraction <- function(radiation, clear_sky) {
 #'
 #' @examples
 calc_longwave_radiation <- function(temp, act_vapor_pressure, radiation_fraction) {
-  4.903e-9 * ((temp+273.16)^4)*(0.34-(0.14*(sqrt(act_vapor_pressure))))*((1.35*(radiation_fraction))-0.35)
+  4.903e-9 * ((temp + 273.16)^4) * (0.34 - (0.14 * (sqrt(act_vapor_pressure)))) * ((1.35 * (radiation_fraction)) - 0.35)
 }
 
 #' Calculate the outgoing shortwave radiation.
@@ -164,7 +169,7 @@ calc_net_radiation <- function(shortwave, longwave) {
 #'
 #' @examples
 calc_svp_slope <- function(temp) {
-  (4098 * (0.6108*exp((17.27*temp)/(temp + 237.3)))) / ((temp + 237.3)^2)
+  (4098 * (0.6108 * exp((17.27 * temp) / (temp + 237.3)))) / ((temp + 237.3)^2)
 }
 
 #' Estimate the atmospheric pressure given elevation. This assumes a constant pressure of 101.3 kPa
@@ -177,7 +182,7 @@ calc_svp_slope <- function(temp) {
 #' @examples
 calc_pressure <- function(elev) {
   # Assumes constant sea level pressure of 101.3!!!
-  101.3 * (((293 - 0.0065 * elev) / 293) ^ 5.26)
+  101.3 * (((293 - 0.0065 * elev) / 293)^5.26)
 }
 
 #' Calculate the psychrometric constant given air pressure.
