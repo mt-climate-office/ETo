@@ -4,7 +4,7 @@
 \alias{etr_hargreaves}
 \title{Calculate reference ET using the Hargreaves method.}
 \usage{
-etr_hargreaves(tmin, tmax, tmean, lat, day)
+etr_hargreaves(tmin, tmax, tmean, lat, day, srad = NULL)
 }
 \arguments{
 \item{tmin}{The minimum air temperature in deg C.}

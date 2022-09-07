@@ -11,17 +11,17 @@ etr_penman_monteith(lat, day, rh, temp, rad, ws, elev, reference = 0.23)
 
 \item{day}{The julian day ETo is being calculated on.}
 
-\item{rh}{Relative humidity (\%)}
+\item{rh}{Relative humidity (\%).}
 
 \item{temp}{Air temperature in Celsius.}
 
-\item{rad}{Shortwave radiation in W m^-2}
+\item{rad}{Shortwave radiation in W m^-2.}
 
-\item{ws}{Wind speed at 2 meters in M s^-1}
+\item{ws}{Wind speed at 2 meters in M s^-1.}
 
 \item{elev}{Elevation in meters.}
 
-\item{reference}{The albedo of the reference surface (defaults to 0.23 for grass)}
+\item{reference}{The albedo of the reference surface (defaults to 0.23 for grass).}
 }
 \value{
 Reference ET in mm per day.
