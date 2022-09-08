@@ -14,6 +14,7 @@ calc_etr_spatial(
   ws = NULL,
   elev = NULL,
   day = NULL,
+  lat = NULL,
   reference = 0.23,
   z = 9,
   method = "penman"
@@ -39,6 +40,10 @@ package.}
 \item{day}{The Julian day of the year ETo is being calculated for. Can either
 be an integer or a date object.}
 
+\item{lat}{A \code{terra::rast} of latitude with the same resolution, projection,
+and extent as all other input rasters. If left blank, a latitude raster will
+be derived from the \code{tmean} input.}
+
 \item{reference}{The albedo of the reference surface ranging from 0 - 1.
 Defaults to 0.23 for grass.}
 
@@ -57,6 +62,8 @@ method or the Hargreaves method.
 }
 \examples{
 \dontrun{
+
+# Calculate ETo across Montana for 2015-01-01
 srad <- terra::rast(srad) \%>\% terra::subset(1)
 tmean <- terra::rast(tmean) \%>\% terra::subset(1)
 tmax <- terra::rast(tmax) \%>\% terra::subset(1)

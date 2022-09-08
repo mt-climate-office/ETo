@@ -4,7 +4,7 @@
 \alias{etr_penman_monteith}
 \title{Calculate daily total reference ET at a given point.}
 \usage{
-etr_penman_monteith(lat, day, rh, temp, rad, ws, elev, reference = 0.23)
+etr_penman_monteith(lat, day, rh, temp, srad, ws, elev, reference = 0.23)
 }
 \arguments{
 \item{lat}{Latitude of ETo calculation in degrees.}
@@ -15,7 +15,7 @@ etr_penman_monteith(lat, day, rh, temp, rad, ws, elev, reference = 0.23)
 
 \item{temp}{Air temperature in Celsius.}
 
-\item{rad}{Shortwave radiation in W m^-2.}
+\item{srad}{Shortwave radiation in W m^-2.}
 
 \item{ws}{Wind speed at 2 meters in M s^-1.}
 

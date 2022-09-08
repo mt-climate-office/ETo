@@ -3,20 +3,30 @@
 \name{get_elev_from_point}
 \alias{get_elev_from_point}
 \title{Get the elevation in meters for a given latitude and longitude.
-Latitude/longitude must be in degrees/geographic projection.}
+Latitude/longitude must be in degrees with a geographic projection.}
 \usage{
 get_elev_from_point(lat, lon)
 }
 \arguments{
 \item{lat}{The latitude to extract elevation for. Can either be a floating point value or a
-vector of}
+vector of latitudes.}
 
-\item{lon}{The longitude to extract elevation for.}
+\item{lon}{The longitude to extract elevation for. Can either be a floating point value or a
+vector of latitudes.}
 }
 \value{
-A single value
+A numeric giving the elevation in meters for the input lat(s) and lon(s).
 }
 \description{
 Get the elevation in meters for a given latitude and longitude.
-Latitude/longitude must be in degrees/geographic projection.
+Latitude/longitude must be in degrees with a geographic projection.
+}
+\examples{
+\dontrun{
+xs = c(-113.994, -111.032)
+ys = c(46.8721, 45.6815)
+
+# Get elevation of Missoula and Bozeman.
+elev <- get_elev_from_point(ys, xs)
+}
 }

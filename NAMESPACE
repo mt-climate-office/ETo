@@ -3,6 +3,7 @@
 export(calc_act_vapor_pressure)
 export(calc_clear_sky_radiation)
 export(calc_etr_spatial)
+export(calc_etr_spatial_stacked)
 export(calc_extraterrestrial_rad)
 export(calc_inverse_relative_distance)
 export(calc_longwave_radiation)

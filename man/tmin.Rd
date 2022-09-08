@@ -4,13 +4,13 @@
 \name{tmin}
 \alias{tmin}
 \title{Downscaled daily CMIP6 min temperature (K) projections across Montana for the
-2015-01-01 to 2100-12-30 record.}
+2015-01-01 to 2016-01-01 record.}
 \format{
 A \code{terra::rast} object with the following attributes:
 \describe{
 \item{CRS}{EPSG 4326}
 \item{resolution}{0.25 x 0.25 degrees}
-\item{time}{A date list ranging from 2015-01-01 to 2100-12-30}
+\item{time}{A date list ranging from 2015-01-01 to 2016-01-01}
 }
 }
 \source{
@@ -21,6 +21,6 @@ tmin
 }
 \description{
 Downscaled daily CMIP6 min temperature (K) projections across Montana for the
-2015-01-01 to 2100-12-30 record.
+2015-01-01 to 2016-01-01 record.
 }
 \keyword{datasets}

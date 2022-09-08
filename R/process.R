@@ -210,7 +210,6 @@ calc_etr_spatial_stacked <- function(
     checkmate::assert_class(rh, "SpatRaster")
     checkmate::assert_class(ws, "SpatRaster")
 
-
     dataset <- terra::sds(lat, days, rh, tmean, srad, ws, elev, ref)
 
     v_etr <- Vectorize(etr_penman_monteith)
@@ -218,9 +217,7 @@ calc_etr_spatial_stacked <- function(
 
   } else {
 
-    dataset <- terra::sds(tmin, tmax, tmean, lat, days) %>%
-      magrittr::set_names(c("tmin", "tmax", "tmean", "lat", "days", "srad"))
-
+    dataset <- terra::sds(tmin, tmax, tmean, lat, days)
     v_hg <- Vectorize(etr_hargreaves)
     ETo <- terra::lapp(dataset, v_hg)
 
