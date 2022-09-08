@@ -8,7 +8,6 @@
 #' @examples
 #' calc_solar_declination(60)
 calc_solar_declination <- function(day) {
-  stopifnot(is.numeric(day) || inherits(day, "Date"))
   if (inherits(day, "Date")) {
     day <- as.numeric(format(day, "%j"))
   }
@@ -25,7 +24,6 @@ calc_solar_declination <- function(day) {
 #' @examples
 #' calc_inverse_relative_distance(60)
 calc_inverse_relative_distance <- function(day) {
-  stopifnot(is.numeric(day) || inherits(day, "Date"))
   if (inherits(day, "Date")) {
     day <- as.numeric(format(day, "%j"))
   }
@@ -108,16 +106,16 @@ calc_act_vapor_pressure <- function(svp, rh) {
 #' @examples
 calc_radiation_fraction <- function(radiation, clear_sky) {
   frac <- radiation / clear_sky
-  if (inherits(frac, "SpatRaster")) {
-    frac[frac > 1] <- 1
-    return(frac)
-  } else {
+  # if (inherits(frac, "SpatRaster")) {
+  #   frac[frac > 1] <- 1
+  #   return(frac)
+  # } else {
     if (frac > 1) {
       return(1)
     } else {
       return(frac)
     }
-  }
+  # }
 }
 
 #' Calculate the outgoing longwave radiation.

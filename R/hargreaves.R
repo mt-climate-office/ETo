@@ -24,6 +24,5 @@ etr_hargreaves <- function(tmin, tmax, tmean, lat, day, srad = NULL) {
     tmp3 <- cos(lat) * cos(declination) * sin(sunset_hour_angle)
     srad <- tmp1 * 0.0820 * inverse_distance * (tmp2 + tmp3)
   }
-
   0.0023 * (tmean + 17.8) * (tmax - tmin)**0.5 * 0.408 * srad
 }

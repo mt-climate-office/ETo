@@ -1,14 +1,22 @@
 #' Get the elevation in meters for a given latitude and longitude.
-#' Latitude/longitude must be in degrees/geographic projection.
+#' Latitude/longitude must be in degrees with a geographic projection.
 #'
 #' @param lat The latitude to extract elevation for. Can either be a floating point value or a
-#' vector of
-#' @param lon The longitude to extract elevation for.
+#' vector of latitudes.
+#' @param lon The longitude to extract elevation for. Can either be a floating point value or a
+#' vector of latitudes.
 #'
-#' @return A single value
+#' @return A numeric giving the elevation in meters for the input lat(s) and lon(s).
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' xs = c(-113.994, -111.032)
+#' ys = c(46.8721, 45.6815)
+#'
+#' # Get elevation of Missoula and Bozeman.
+#' elev <- get_elev_from_point(ys, xs)
+#' }
 get_elev_from_point <- function(lat, lon) {
   elev <- data.frame(x = lon, y = lat) |>
     sf::st_as_sf(coords = c("x", "y"), crs = 4326) |>
@@ -60,6 +68,9 @@ get_elev_from_raster <- function(r, z) {
 #' package.
 #' @param day The Julian day of the year ETo is being calculated for. Can either
 #' be an integer or a date object.
+#' @param lat A `terra::rast` of latitude with the same resolution, projection,
+#' and extent as all other input rasters. If left blank, a latitude raster will
+#' be derived from the `tmean` input.
 #' @param reference The albedo of the reference surface ranging from 0 - 1.
 #' Defaults to 0.23 for grass.
 #' @param z The zoom level download elevation data at ranging from 1 - 14.
@@ -72,6 +83,8 @@ get_elev_from_raster <- function(r, z) {
 #'
 #' @examples
 #' \dontrun{
+#'
+#' # Calculate ETo across Montana for 2015-01-01
 #' srad <- terra::rast(srad) %>% terra::subset(1)
 #' tmean <- terra::rast(tmean) %>% terra::subset(1)
 #' tmax <- terra::rast(tmax) %>% terra::subset(1)
@@ -89,7 +102,7 @@ get_elev_from_raster <- function(r, z) {
 #' }
 calc_etr_spatial <- function(
   tmean, tmin = NULL, tmax = NULL, srad = NULL, rh = NULL, ws = NULL, elev = NULL,
-  day = NULL, reference = 0.23, z = 9, method = "penman"
+  day = NULL, lat = NULL, reference = 0.23, z = 9, method = "penman"
 ) {
 
   checkmate::assert_choice(method, c("penman", "hargreaves"))
@@ -101,8 +114,10 @@ calc_etr_spatial <- function(
     day <- terra::time(tmean)
   }
 
-  lat <- terra::deepcopy(tmean)
-  lat[] <- terra::xyFromCell(lat, 1:terra::ncell(lat))[,2]
+  if (is.null(lat)) {
+    lat <- terra::deepcopy(tmean)
+    lat[] <- terra::xyFromCell(lat, 1:terra::ncell(lat))[,2]
+  }
 
   if (method == "penman") {
     checkmate::assert_class(tmean, "SpatRaster")
@@ -128,6 +143,89 @@ calc_etr_spatial <- function(
 
 }
 
+#' Calculate a timeseries of ETo across a set of input rasters. Assumes that all
+#' inputs share the same resolution, extent, projection and number of layers.
+#'
+#' @param tmean A multilayer `terra::rast`
+#' @param tmin
+#' @param tmax
+#' @param srad
+#' @param rh
+#' @param ws
+#' @param elev
+#' @param days
+#' @param reference
+#' @param z
+#' @param method
+#'
+#' @return
+#' @export
+#'
+#' @examples
+calc_etr_spatial_stacked <- function(
+    tmean, tmin = NULL, tmax = NULL, srad = NULL, rh = NULL, ws = NULL, elev = NULL,
+    days = NULL, reference = 0.23, z = 9, method = "penman"
+) {
+
+  # tmean %<>% terra::rast()
+  # tmean = tmean - 273.15
+  # tmin %<>% terra::rast()
+  # tmin = tmin - 273.15
+  # tmax %<>% terra::rast()
+  # tmax = tmax - 273.15
+  # srad %<>% terra::rast()
+  # rh %<>% terra::rast()
+  # ws %<>% terra::rast()
+  # elev = NULL
+  # days = NULL
+  # reference = 0.23
+  # z = 9
+
+  if (is.null(elev)) {
+    elev <- get_elev_from_raster(tmean[[1]], z = z)
+  }
+
+  if (is.null(days)) {
+    days <- terra::time(tmean) |>
+      lapply(function(x) {
+        jday <- format(x, "%j") |>
+          as.numeric()
+        temp <- terra::deepcopy(tmean[[1]])
+        temp[] <- jday
+        terra::time(temp) <- x
+        temp
+      }) |>
+      terra::rast()
+  }
+
+  lat <- terra::deepcopy(tmean[[1]])
+  lat[] <- terra::xyFromCell(lat, 1:terra::ncell(lat))[,2]
+
+  ref <- terra::deepcopy(tmean[[1]])
+  ref[] <- reference
+
+  if (method == "penman") {
+    checkmate::assert_class(tmean, "SpatRaster")
+    checkmate::assert_class(srad, "SpatRaster")
+    checkmate::assert_class(rh, "SpatRaster")
+    checkmate::assert_class(ws, "SpatRaster")
+
+
+    dataset <- terra::sds(lat, days, rh, tmean, srad, ws, elev, ref)
+
+    v_etr <- Vectorize(etr_penman_monteith)
+    ETo <- terra::lapp(x = dataset, v_etr)
+
+  } else {
+
+    dataset <- terra::sds(tmin, tmax, tmean, lat, days) %>%
+      magrittr::set_names(c("tmin", "tmax", "tmean", "lat", "days", "srad"))
+
+    v_hg <- Vectorize(etr_hargreaves)
+    ETo <- terra::lapp(dataset, v_hg)
+
+  }
+}
 # list.files("~/MCO_onedrive/General/nexgddp_cmip6_montana/data-derived/nexgddp_cmip6/",
 #            full.names = T, pattern = "MRI-ESM2-0") %>%
 #   grep("ssp585", ., value = T) %>%
