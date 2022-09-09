@@ -5,7 +5,7 @@
 \title{Download a raster of elevation that matches the shape, resolution and
 projection of an input raster.}
 \usage{
-get_elev_from_raster(r, z)
+get_elev_from_raster(r, z, verbose = FALSE)
 }
 \arguments{
 \item{r}{A \code{terra::rast} specifying the domain to download data for.}
@@ -13,6 +13,9 @@ get_elev_from_raster(r, z)
 \item{z}{The zoom level download elevation data at ranging from 1 - 14.
 One if coarser resolution, 14 is finer resolution. For more information,
 look at \code{?elevatr::get_elev_raster}}
+
+\item{verbose}{Whether to display all messages when getting elevation data.
+Defaults to FALSE.}
 }
 \value{
 \code{terra::rast} of elevation in m for the input domain

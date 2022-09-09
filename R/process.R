@@ -32,6 +32,8 @@ get_elev_from_point <- function(lat, lon) {
 #' @param z The zoom level download elevation data at ranging from 1 - 14.
 #' One if coarser resolution, 14 is finer resolution. For more information,
 #' look at `?elevatr::get_elev_raster`
+#' @param verbose Whether to display all messages when getting elevation data.
+#' Defaults to FALSE.
 #'
 #' @return `terra::rast` of elevation in m for the input domain
 #' @export
@@ -42,14 +44,14 @@ get_elev_from_point <- function(lat, lon) {
 #' elev <- get_elev_from_raster(r, 9)
 #' terra::plot(elev)
 #' }
-get_elev_from_raster <- function(r, z) {
+get_elev_from_raster <- function(r, z, verbose = FALSE) {
   checkmate::assert_class(r, "SpatRaster")
   checkmate::assert_number(z)
 
   terra::boundaries(r) |>
     terra::as.polygons() |>
     sf::st_as_sf() |>
-    elevatr::get_elev_raster(z = z, clip = "bbox") |>
+    elevatr::get_elev_raster(z = z, verbose = verbose) |>
     terra::rast() |>
     terra::project(r)
 }
