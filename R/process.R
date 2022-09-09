@@ -40,6 +40,7 @@ get_elev_from_point <- function(lat, lon) {
 #'
 #' @examples
 #' \dontrun{
+#' # test
 #' r <- terra::rast(rh)[[1]]
 #' elev <- get_elev_from_raster(r, 9)
 #' terra::plot(elev)
@@ -86,30 +87,25 @@ get_elev_from_raster <- function(r, z, verbose = FALSE) {
 #'
 #' @examples
 #' \dontrun{
-#' srad <- terra::rast(srad) |> terra::subset(10)
-#' tmean <- terra::rast(tmean) |>
-#'   terra::subset(10) |>
-#'   {
-#'     . - 273.15
-#'   }
-#' tmax <- terra::rast(tmax) |>
-#'   terra::subset(10) |>
-#'   {
-#'     . - 273.15
-#'   }
-#' tmin <- terra::rast(tmin) |>
-#'   terra::subset(10) |>
-#'   {
-#'     . - 273.15
-#'   }
-#' rh <- terra::rast(rh) |> terra::subset(10)
-#' ws <- terra::rast(ws) |> terra::subset(10)
+#' # Load data. Need to read with terra::rast to unpack to a raster.
+#' srad <- terra::rast(srad) |> terra::subset(1:10)
+#' tmean <- terra::rast(tmean) |> terra::subset(1:10)
+#' # Convert from K to C
+#' tmean <- tmean - 273.15
+#' tmax <- terra::rast(tmax) |> terra::subset(1:10)
+#' # Convert from K to C
+#' tmax <- tmax - 273.15
+#' tmin <- terra::rast(tmin) |> terra::subset(1:10)
+#' # Convert from K to C
+#' tmin <- tmin - 273.15
+#' rh <- terra::rast(rh) |> terra::subset(1:10)
+#' ws <- terra::rast(ws) |> terra::subset(1:10)
 #'
-#' penman <- calc_etr_spatial_stacked(
+#' penman <- calc_etr_spatial(
 #'   tmean = tmean, srad = srad, rh = rh, ws = ws,
 #'   method = "penman", reference = 0.23, z = 3
 #' )
-#' hargreaves <- calc_etr_spatial_stacked(
+#' hargreaves <- calc_etr_spatial(
 #'   tmean = tmean, tmax = tmax, tmin = tmin, method = "hargreaves", z = 3
 #' )
 #' }
