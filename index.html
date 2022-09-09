@@ -69,10 +69,42 @@
 <h2 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
 </h2>
 <p>Below, the <a href="https://www.nccs.nasa.gov/services/data-collections/land-based-products/nex-gddp-cmip6" class="external-link">downscaled CMIP6</a> data for Montana that are provided with the package are used to calculate and compare different ETo methods:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Warning: [boundaries] boundary detection is only done for the first layer</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Mosaicing &amp; Projecting</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Clipping DEM to bbox</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Note: Elevation units are in meters.</span></span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mt-climate-office.github.io/ETo/">ETo</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Load data. Need to read with terra::rast to unpack to a raster.</span></span>
+<span><span class="va">srad</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="va">srad</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span></span>
+<span><span class="va">tmean</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="va">tmean</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span> </span>
+<span><span class="co"># Convert from K to C</span></span>
+<span><span class="va">tmean</span> <span class="op">&lt;-</span> <span class="va">tmean</span> <span class="op">-</span> <span class="fl">273.15</span></span>
+<span><span class="va">tmax</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="va">tmax</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span> </span>
+<span><span class="co"># Convert from K to C</span></span>
+<span><span class="va">tmax</span> <span class="op">&lt;-</span> <span class="va">tmax</span> <span class="op">-</span> <span class="fl">273.15</span></span>
+<span><span class="va">tmin</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="va">tmin</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span> </span>
+<span><span class="co"># Convert from K to C</span></span>
+<span><span class="va">tmin</span> <span class="op">&lt;-</span> <span class="va">tmin</span> <span class="op">-</span> <span class="fl">273.15</span></span>
+<span><span class="va">rh</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="va">rh</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span></span>
+<span><span class="va">ws</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="va">ws</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Get a raster grid of elevation for the domain.</span></span>
+<span><span class="va">elev</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get_elev_from_raster.html">get_elev_from_raster</a></span><span class="op">(</span><span class="va">tmean</span>, z <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: [boundaries] boundary detection is only done for the first layer</span></span>
+<span></span>
+<span><span class="co"># Calculate timeseries of Penman Montieth</span></span>
+<span><span class="va">penman</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calc_etr_spatial.html">calc_etr_spatial</a></span><span class="op">(</span></span>
+<span> tmean <span class="op">=</span> <span class="va">tmean</span>, srad <span class="op">=</span> <span class="va">srad</span>, rh <span class="op">=</span> <span class="va">rh</span>, ws <span class="op">=</span> <span class="va">ws</span>,</span>
+<span> method <span class="op">=</span> <span class="st">"penman"</span>, reference <span class="op">=</span> <span class="fl">0.23</span>, elev <span class="op">=</span> <span class="va">elev</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Calculate timeseries of Hargreaves</span></span>
+<span><span class="va">hargreaves</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calc_etr_spatial.html">calc_etr_spatial</a></span><span class="op">(</span></span>
+<span> tmean <span class="op">=</span> <span class="va">tmean</span>, tmax <span class="op">=</span> <span class="va">tmax</span>, tmin <span class="op">=</span> <span class="va">tmin</span>, method <span class="op">=</span> <span class="st">"hargreaves"</span>, elev <span class="op">=</span> <span class="va">elev</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">diff</span> <span class="op">&lt;-</span> <span class="va">penman</span> <span class="op">-</span> <span class="va">hargreaves</span></span>
+<span></span>
+<span><span class="co"># Plot the difference (in mm) between the two methods.</span></span>
+<span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">diff</span>, range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.6</span>, <span class="fl">1.5</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-example-1.png" width="100%"></p>
 </div>
 </div>
