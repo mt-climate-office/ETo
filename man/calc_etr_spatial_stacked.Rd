@@ -63,9 +63,9 @@ tmean, srad, rh, and ws must all be supplied.
 }
 \examples{
 \dontrun{
-  srad <- terra::rast(srad) \%>\% terra::subset(1)
+srad <- terra::rast(srad) \%>\% terra::subset(1)
 tmean <- terra::rast(tmean) \%>\% terra::subset(1) \%>\%  {. - 273.15}
- <- terra::rast(tmax) \%>\% terra::subset(1) \%>\%  {. - 273.15}
+tmax <- terra::rast(tmax) \%>\% terra::subset(1) \%>\%  {. - 273.15}
 tmin <- terra::rast(tmin) \%>\% terra::subset(1) \%>\%  {. - 273.15}
 rh <- terra::rast(rh) \%>\% terra::subset(1)
 ws <- terra::rast(ws) \%>\% terra::subset(1)
