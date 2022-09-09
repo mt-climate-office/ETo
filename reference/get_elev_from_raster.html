@@ -48,7 +48,7 @@ projection of an input raster.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">get_elev_from_raster</span><span class="op">(</span><span class="va">r</span>, <span class="va">z</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">get_elev_from_raster</span><span class="op">(</span><span class="va">r</span>, <span class="va">z</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -61,6 +61,11 @@ projection of an input raster.</p>
 <dd><p>The zoom level download elevation data at ranging from 1 - 14.
 One if coarser resolution, 14 is finer resolution. For more information,
 look at <code><a href="https://rdrr.io/pkg/elevatr/man/get_elev_raster.html" class="external-link">?elevatr::get_elev_raster</a></code></p></dd>
+
+
+<dt>verbose</dt>
+<dd><p>Whether to display all messages when getting elevation data.
+Defaults to FALSE.</p></dd>
 
 </dl></div>
     <div class="section level2">
