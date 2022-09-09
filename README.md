@@ -35,9 +35,42 @@ CMIP6](https://www.nccs.nasa.gov/services/data-collections/land-based-products/n
 data for Montana that are provided with the package are used to
 calculate and compare different ETo methods:
 
-    #> Warning: [boundaries] boundary detection is only done for the first layer
-    #> Mosaicing & Projecting
-    #> Clipping DEM to bbox
-    #> Note: Elevation units are in meters.
+``` r
+library(ETo)
+
+# Load data. Need to read with terra::rast to unpack to a raster.
+srad <- terra::rast(srad) |> terra::subset(1:10)
+tmean <- terra::rast(tmean) |> terra::subset(1:10) 
+# Convert from K to C
+tmean <- tmean - 273.15
+tmax <- terra::rast(tmax) |> terra::subset(1:10) 
+# Convert from K to C
+tmax <- tmax - 273.15
+tmin <- terra::rast(tmin) |> terra::subset(1:10) 
+# Convert from K to C
+tmin <- tmin - 273.15
+rh <- terra::rast(rh) |> terra::subset(1:10)
+ws <- terra::rast(ws) |> terra::subset(1:10)
+
+# Get a raster grid of elevation for the domain.
+elev <- get_elev_from_raster(tmean, z = 3)
+#> Warning: [boundaries] boundary detection is only done for the first layer
+
+# Calculate timeseries of Penman Montieth
+penman <- calc_etr_spatial(
+ tmean = tmean, srad = srad, rh = rh, ws = ws,
+ method = "penman", reference = 0.23, elev = elev
+)
+
+# Calculate timeseries of Hargreaves
+hargreaves <- calc_etr_spatial(
+ tmean = tmean, tmax = tmax, tmin = tmin, method = "hargreaves", elev = elev
+)
+
+diff <- penman - hargreaves
+
+# Plot the difference (in mm) between the two methods.
+terra::plot(diff, range = c(-0.6, 1.5))
+```
 
 <img src="man/figures/README-example-1.png" width="100%" />

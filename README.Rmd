@@ -35,7 +35,7 @@ devtools::install_github("mt-climate-office/ETo")
 
 Below, the [downscaled CMIP6](https://www.nccs.nasa.gov/services/data-collections/land-based-products/nex-gddp-cmip6) data for Montana that are provided with the package are used to calculate and compare different ETo methods:
 
-```{r example, echo=FALSE}
+```{r example, message=FALSE}
 library(ETo)
 
 # Load data. Need to read with terra::rast to unpack to a raster.
