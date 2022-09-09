@@ -19,3 +19,6 @@ The outgoing longwave radiation in MJ m^-2 day^-1.
 \description{
 Calculate the outgoing longwave radiation.
 }
+\examples{
+calc_longwave_radiation(5, 1.3, 0.5)
+}

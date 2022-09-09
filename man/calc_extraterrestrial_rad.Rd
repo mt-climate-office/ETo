@@ -13,6 +13,12 @@ calc_extraterrestrial_rad(sunset_hour, lat, declination)
 
 \item{declination}{The solar declination in radians. Can be calculated using \code{calc_solar_declination}}
 }
+\value{
+The extraterrestrial radiation in MJ m^-2 d^-1
+}
 \description{
 Calculate the theoretical extraterrestrial radiation at a given latitude.
+}
+\examples{
+calc_extraterrestrial_rad(23, 0.5, 2.5)
 }

@@ -15,3 +15,6 @@ The saturation vapor pressure in kPa.
 \description{
 Calculate the saturation vapor pressure given the daily average temperature.
 }
+\examples{
+calc_sat_vapor_pressure(5)
+}

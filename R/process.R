@@ -22,7 +22,7 @@ get_elev_from_point <- function(lat, lon) {
     sf::st_as_sf(coords = c("x", "y"), crs = 4326) |>
     elevatr::get_elev_point()
 
-  elev$elevation
+  return(elev$elevation)
 }
 
 #' Download a raster of elevation that matches the shape, resolution and
@@ -33,7 +33,7 @@ get_elev_from_point <- function(lat, lon) {
 #' One if coarser resolution, 14 is finer resolution. For more information,
 #' look at `?elevatr::get_elev_raster`
 #'
-#' @return
+#' @return `terra::rast` of elevation in m for the input domain
 #' @export
 #'
 #' @examples
@@ -126,7 +126,7 @@ calc_etr_spatial <- function(
     checkmate::assert_class(ws, "SpatRaster")
 
     eto <- etr_penman_monteith(
-      lat = lat, day = day, rh = rh, temp = tmean, rad = srad, ws = ws,
+      lat = lat, day = day, rh = rh, temp = tmean, srad = srad, ws = ws,
       elev = elev, reference = reference
     )
   } else {
@@ -144,42 +144,55 @@ calc_etr_spatial <- function(
 }
 
 #' Calculate a timeseries of ETo across a set of input rasters. Assumes that all
-#' inputs share the same resolution, extent, projection and number of layers.
+#' inputs share the same resolution, extent, projection. Also assumes that
+#'  rasters have the number of layers with each layer corresponding to a day.
+#' For hargreaves, only tmean, tmin and tmax are required arguments. For PM,
+#' tmean, srad, rh, and ws must all be supplied.
 #'
-#' @param tmean A multilayer `terra::rast`
-#' @param tmin
-#' @param tmax
-#' @param srad
-#' @param rh
-#' @param ws
-#' @param elev
-#' @param days
-#' @param reference
-#' @param z
-#' @param method
+#' @param tmean A multilayer timeseries `terra::rast` of mean daily temperature in degrees C.
+#' @param tmin A multilayer timeseries `terra::rast` of max daily temperature in degrees C.
+#' @param tmax A multilayer timeseries `terra::rast` of min daily temperature in degrees C.
+#' @param srad A multilayer timeseries `terra::rast` of daily solar radiation in W m^-2.
+#' @param rh A multilayer timeseries `terra::rast` of mean daily relative humidity (%).
+#' @param ws A multilayer timeseries `terra::rast` of mean daily wind speed at 2m height in m s^-1.
+#' @param elev A `terra::rast` of elevation in meters. If left blank, elevation will
+#' be derived using the `elevatr` package.
+#' @param days A multilayer timeseries `terra::rast` where each day is a constant value
+#' of the Julian day. If left blank, it is assumed the `tmean` input has a time
+#' attribute and the raster will be derived using `terra::time`.
+#' @param reference The albedo of the reference surface ranging from 0 - 1.
+#' Defaults to 0.23 for grass.
+#' @param z The zoom level download elevation data at ranging from 1 - 14.
+#' One if coarser resolution, 14 is finer resolution. For more information,
+#' look at `?elevatr::get_elev_raster`
+#' @param method The method to calculate ETo. Can either be "penman" or "hargreaves".
 #'
-#' @return
+#' @return A `terra::rast` timeseries of ETo for the input domain.
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#'   srad <- terra::rast(srad) %>% terra::subset(1)
+#' tmean <- terra::rast(tmean) %>% terra::subset(1) %>%  {. - 273.15}
+#'  <- terra::rast(tmax) %>% terra::subset(1) %>%  {. - 273.15}
+#' tmin <- terra::rast(tmin) %>% terra::subset(1) %>%  {. - 273.15}
+#' rh <- terra::rast(rh) %>% terra::subset(1)
+#' ws <- terra::rast(ws) %>% terra::subset(1)
+#'
+#' penman <- calc_etr_spatial(
+#'   tmean = tmean, srad = srad, rh = rh, ws = ws,
+#'   method = "penman", reference = 0.23, z = 3
+#' )
+#' hargreaves <- calc_etr_spatial(
+#'   tmean = tmean, tmax = tmax, tmin = tmin, method = "hargreaves", z = 3
+#' )
+#' }
 calc_etr_spatial_stacked <- function(
     tmean, tmin = NULL, tmax = NULL, srad = NULL, rh = NULL, ws = NULL, elev = NULL,
     days = NULL, reference = 0.23, z = 9, method = "penman"
 ) {
 
-  # tmean %<>% terra::rast()
-  # tmean = tmean - 273.15
-  # tmin %<>% terra::rast()
-  # tmin = tmin - 273.15
-  # tmax %<>% terra::rast()
-  # tmax = tmax - 273.15
-  # srad %<>% terra::rast()
-  # rh %<>% terra::rast()
-  # ws %<>% terra::rast()
-  # elev = NULL
-  # days = NULL
-  # reference = 0.23
-  # z = 9
+  checkmate::assert_choice(method, c("penman", "hargreaves"))
 
   if (is.null(elev)) {
     elev <- get_elev_from_raster(tmean[[1]], z = z)
@@ -223,16 +236,3 @@ calc_etr_spatial_stacked <- function(
 
   }
 }
-# list.files("~/MCO_onedrive/General/nexgddp_cmip6_montana/data-derived/nexgddp_cmip6/",
-#            full.names = T, pattern = "MRI-ESM2-0") %>%
-#   grep("ssp585", ., value = T) %>%
-#   grep(".json", ., value = T, invert = T) -> f_list
-#
-#
-# rh <- f_list[1] %>% terra::rast() %>% terra::subset(1:365) %>% terra::wrap()
-# srad <- f_list[5] %>% terra::rast() %>% terra::subset(1:365)%>% terra::wrap()
-# ws <- f_list[6] %>% terra::rast()%>% terra::subset(1:365) %>% terra::wrap()
-# tmean <- f_list[7] %>% terra::rast()%>% terra::subset(1:365) %>% terra::wrap()
-# tmax <- f_list[8] %>% terra::rast()%>% terra::subset(1:365)%>% terra::wrap()
-# tmin <- f_list[9] %>% terra::rast() %>% terra::subset(1:365)%>% terra::wrap()
-# use_data(rh, srad, ws, tmean, tmax, tmin, overwrite = T)

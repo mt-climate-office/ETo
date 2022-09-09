@@ -15,3 +15,6 @@ The pressure in kPa.
 \description{
 Estimate the atmospheric pressure given elevation. This assumes a constant pressure of 101.3 kPa
 }
+\examples{
+calc_pressure(1000)
+}

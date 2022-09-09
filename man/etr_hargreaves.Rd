@@ -13,13 +13,19 @@ etr_hargreaves(tmin, tmax, tmean, lat, day, srad = NULL)
 
 \item{tmean}{The average air temperature in deg C.}
 
-\item{lat}{The latitude of the measurements in deg C.}
+\item{lat}{The latitude of the measurements degrees.}
 
 \item{day}{The julian day of the measurement. Can either be an integer or date object.}
+
+\item{srad}{Downwelling shortwave radiaiton in W m^-2. Defaults to NULL. If
+left as null, srad will be estimated using latitude and julian day.}
 }
 \value{
 Daily reference ET in mm day^-1
 }
 \description{
 Calculate reference ET using the Hargreaves method.
+}
+\examples{
+etr_hargreaves(10, 15, 5, 30, 150)
 }

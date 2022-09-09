@@ -17,3 +17,6 @@ The outgoing shortwave radiation in  MJ m^-2 day^-1.
 \description{
 Calculate the outgoing shortwave radiation.
 }
+\examples{
+calc_shortwave_radiation(10, 0.23)
+}

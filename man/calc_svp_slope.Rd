@@ -15,3 +15,6 @@ The slope of the saturation vapor pressure curve in kPa.
 \description{
 Calculate the slope of the saturation vapor pressure curve.
 }
+\examples{
+calc_svp_slope(5)
+}

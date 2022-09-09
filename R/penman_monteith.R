@@ -13,7 +13,13 @@
 #' @export
 #'
 #' @examples
+#' etr_penman_monteith(30, 150, 88, 5, 160, 5, 1000)
 etr_penman_monteith <- function(lat, day, rh, temp, srad, ws, elev, reference = 0.23) {
+  checkmate::assert_multi_class(
+    c(lat, day, rh, temp, srad, ws, elev, reference),
+    c("numeric", "SpatRaster")
+  )
+
   lat <- lat_to_radians(lat)
   declination <- calc_solar_declination(day)
   sunset_hour_angle <- calc_sunset_hour_angle(lat, declination)

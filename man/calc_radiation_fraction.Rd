@@ -17,3 +17,6 @@ The fraction of radiation relative to clear sky (unitless).
 \description{
 Calculate fraction of radiation relative to clear sky radiation.
 }
+\examples{
+calc_radiation_fraction(1.2, 3.5)
+}

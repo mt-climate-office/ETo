@@ -29,3 +29,6 @@ Reference ET in mm per day.
 \description{
 Calculate daily total reference ET at a given point.
 }
+\examples{
+etr_penman_monteith(30, 150, 88, 5, 160, 5, 1000)
+}

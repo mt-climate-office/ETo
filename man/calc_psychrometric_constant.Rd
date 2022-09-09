@@ -15,3 +15,6 @@ The psychrometric constant in kPa degC^-1
 \description{
 Calculate the psychrometric constant given air pressure.
 }
+\examples{
+calc_psychrometric_constant(90)
+}

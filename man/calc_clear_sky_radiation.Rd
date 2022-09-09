@@ -17,3 +17,6 @@ The clear sky solar radiation in MJ m^-2 day^-1.
 \description{
 Calculate the clear sky radiation at a location given an elevation.
 }
+\examples{
+calc_clear_sky_radiation(1000, 10)
+}

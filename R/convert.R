@@ -8,7 +8,7 @@
 #' @examples
 #' lat_to_radians(45)
 lat_to_radians <- function(lat) {
-  # stopifnot(is.numeric(lat), abs(lat) <= 360)
+  checkmate::check_multi_class(lat, c("SpatRaster", "numeric"))
   (pi / 180) * lat
 }
 

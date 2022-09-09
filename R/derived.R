@@ -8,6 +8,7 @@
 #' @examples
 #' calc_solar_declination(60)
 calc_solar_declination <- function(day) {
+  checkmate::assert_multi_class(day, c("numeric", "Date", "SpatRaster"))
   if (inherits(day, "Date")) {
     day <- as.numeric(format(day, "%j"))
   }
@@ -24,6 +25,8 @@ calc_solar_declination <- function(day) {
 #' @examples
 #' calc_inverse_relative_distance(60)
 calc_inverse_relative_distance <- function(day) {
+  checkmate::assert_multi_class(day, c("numeric", "Date", "SpatRaster"))
+
   if (inherits(day, "Date")) {
     day <- as.numeric(format(day, "%j"))
   }
@@ -39,7 +42,11 @@ calc_inverse_relative_distance <- function(day) {
 #' @export
 #'
 #' @examples
+#' calc_sunset_hour_angle(0.5, 1)
 calc_sunset_hour_angle <- function(lat, declination) {
+  checkmate::assert_multi_class(lat, c("numeric", "SpatRaster"))
+  checkmate::assert_multi_class(declination, c("numeric", "SpatRaster"))
+
   acos((-tan(lat) * tan(declination)))
 }
 
@@ -49,11 +56,16 @@ calc_sunset_hour_angle <- function(lat, declination) {
 #' @param lat The latitude in radians.
 #' @param declination The solar declination in radians. Can be calculated using `calc_solar_declination`
 #'
-#' @return
+#' @return The extraterrestrial radiation in MJ m^-2 d^-1
 #' @export
 #'
 #' @examples
+#' calc_extraterrestrial_rad(23, 0.5, 2.5)
 calc_extraterrestrial_rad <- function(sunset_hour, lat, declination) {
+  checkmate::assert_multi_class(sunset_hour, c("numeric", "SpatRaster"))
+  checkmate::assert_multi_class(lat, c("numeric", "SpatRaster"))
+  checkmate::assert_multi_class(declination, c("numeric", "SpatRaster"))
+
   ((24 * 60) / pi) * (0.0820 * (sunset_hour * sin(lat) * sin(declination) + cos(lat) * cos(declination) * sin(sunset_hour)))
 }
 
@@ -66,7 +78,11 @@ calc_extraterrestrial_rad <- function(sunset_hour, lat, declination) {
 #' @export
 #'
 #' @examples
+#' calc_clear_sky_radiation(1000, 10)
 calc_clear_sky_radiation <- function(elev, extra_rad) {
+  checkmate::assert_multi_class(elev, c("numeric", "SpatRaster"))
+  checkmate::assert_multi_class(extra_rad, c("numeric", "SpatRaster"))
+
   (0.75 + ((2 * 10^-5) * elev)) * extra_rad
 }
 
@@ -78,7 +94,9 @@ calc_clear_sky_radiation <- function(elev, extra_rad) {
 #' @export
 #'
 #' @examples
+#' calc_sat_vapor_pressure(5)
 calc_sat_vapor_pressure <- function(temp) {
+  checkmate::assert_multi_class(temp, c("numeric", "SpatRaster"))
   0.6108 * exp((17.27 * temp) / (temp + 237.3))
 }
 
@@ -91,7 +109,10 @@ calc_sat_vapor_pressure <- function(temp) {
 #' @export
 #'
 #' @examples
+#' calc_act_vapor_pressure(0.5, 88)
 calc_act_vapor_pressure <- function(svp, rh) {
+  checkmate::assert_multi_class(svp, c("numeric", "SpatRaster"))
+  checkmate::assert_multi_class(rh, c("numeric", "SpatRaster"))
   svp * (rh / 100)
 }
 
@@ -104,18 +125,21 @@ calc_act_vapor_pressure <- function(svp, rh) {
 #' @export
 #'
 #' @examples
+#' calc_radiation_fraction(1.2, 3.5)
 calc_radiation_fraction <- function(radiation, clear_sky) {
+  checkmate::assert_multi_class(radiation, c("numeric", "SpatRaster"))
+  checkmate::assert_multi_class(clear_sky, c("numeric", "SpatRaster"))
   frac <- radiation / clear_sky
-  # if (inherits(frac, "SpatRaster")) {
-  #   frac[frac > 1] <- 1
-  #   return(frac)
-  # } else {
+  if (inherits(frac, "SpatRaster")) {
+    frac[frac > 1] <- 1
+    return(frac)
+  } else {
     if (frac > 1) {
       return(1)
     } else {
       return(frac)
     }
-  # }
+  }
 }
 
 #' Calculate the outgoing longwave radiation.
@@ -128,7 +152,11 @@ calc_radiation_fraction <- function(radiation, clear_sky) {
 #' @export
 #'
 #' @examples
+#' calc_longwave_radiation(5, 1.3, 0.5)
 calc_longwave_radiation <- function(temp, act_vapor_pressure, radiation_fraction) {
+  checkmate::assert_multi_class(temp, c("numeric", "SpatRaster"))
+  checkmate::assert_multi_class(act_vapor_pressure, c("numeric", "SpatRaster"))
+  checkmate::assert_multi_class(radiation_fraction, c("numeric", "SpatRaster"))
   4.903e-9 * ((temp + 273.16)^4) * (0.34 - (0.14 * (sqrt(act_vapor_pressure)))) * ((1.35 * (radiation_fraction)) - 0.35)
 }
 
@@ -141,20 +169,27 @@ calc_longwave_radiation <- function(temp, act_vapor_pressure, radiation_fraction
 #' @export
 #'
 #' @examples
+#' calc_shortwave_radiation(10, 0.23)
 calc_shortwave_radiation <- function(radiation, reference = 0.23) {
+  checkmate::assert_multi_class(radiation, c("numeric", "SpatRaster"))
+  checkmate::assert_multi_class(reference, c("numeric", "SpatRaster"))
+
   (1 - 0.23) * radiation
 }
 
 #' Calculate the net outgoing radiation.
 #'
 #' @param shortwave The outgoing shortwave radiation in  MJ m^-2 day^-1. Can be calculated with `calc_shortwave_radiation`.
-#' @param longwave The outgoing longwave radiation in x MJ m^-2 day^-1.. Can be calculated with `calc_longwave_radiation`.
+#' @param longwave The outgoing longwave radiation in x MJ m^-2 day^-1. Can be calculated with `calc_longwave_radiation`.
 #'
 #' @return The net outgoing radiation in  MJ m^-2 day^-1.
 #' @export
 #'
 #' @examples
+#' calc_net_radiation(10, 5)
 calc_net_radiation <- function(shortwave, longwave) {
+  checkmate::assert_multi_class(shortwave, c("numeric", "SpatRaster"))
+  checkmate::assert_multi_class(longwave, c("numeric", "SpatRaster"))
   shortwave - longwave
 }
 
@@ -166,7 +201,9 @@ calc_net_radiation <- function(shortwave, longwave) {
 #' @export
 #'
 #' @examples
+#' calc_svp_slope(5)
 calc_svp_slope <- function(temp) {
+  checkmate::assert_multi_class(temp, c("numeric", "SpatRaster"))
   (4098 * (0.6108 * exp((17.27 * temp) / (temp + 237.3)))) / ((temp + 237.3)^2)
 }
 
@@ -178,7 +215,9 @@ calc_svp_slope <- function(temp) {
 #' @export
 #'
 #' @examples
+#' calc_pressure(1000)
 calc_pressure <- function(elev) {
+  checkmate::assert_multi_class(elev, c("numeric", "SpatRaster"))
   # Assumes constant sea level pressure of 101.3!!!
   101.3 * (((293 - 0.0065 * elev) / 293)^5.26)
 }
@@ -191,6 +230,8 @@ calc_pressure <- function(elev) {
 #' @export
 #'
 #' @examples
+#' calc_psychrometric_constant(90)
 calc_psychrometric_constant <- function(pressure) {
+  checkmate::assert_multi_class(pressure, c("numeric", "SpatRaster"))
   0.000665 * pressure
 }

@@ -3,7 +3,10 @@
 \name{calc_etr_spatial_stacked}
 \alias{calc_etr_spatial_stacked}
 \title{Calculate a timeseries of ETo across a set of input rasters. Assumes that all
-inputs share the same resolution, extent, projection and number of layers.}
+inputs share the same resolution, extent, projection. Also assumes that
+rasters have the number of layers with each layer corresponding to a day.
+For hargreaves, only tmean, tmin and tmax are required arguments. For PM,
+tmean, srad, rh, and ws must all be supplied.}
 \usage{
 calc_etr_spatial_stacked(
   tmean,
@@ -20,11 +23,59 @@ calc_etr_spatial_stacked(
 )
 }
 \arguments{
-\item{tmean}{A multilayer \code{terra::rast}}
+\item{tmean}{A multilayer timeseries \code{terra::rast} of mean daily temperature in degrees C.}
 
-\item{method}{}
+\item{tmin}{A multilayer timeseries \code{terra::rast} of max daily temperature in degrees C.}
+
+\item{tmax}{A multilayer timeseries \code{terra::rast} of min daily temperature in degrees C.}
+
+\item{srad}{A multilayer timeseries \code{terra::rast} of daily solar radiation in W m^-2.}
+
+\item{rh}{A multilayer timeseries \code{terra::rast} of mean daily relative humidity (\%).}
+
+\item{ws}{A multilayer timeseries \code{terra::rast} of mean daily wind speed at 2m height in m s^-1.}
+
+\item{elev}{A \code{terra::rast} of elevation in meters. If left blank, elevation will
+be derived using the \code{elevatr} package.}
+
+\item{days}{A multilayer timeseries \code{terra::rast} where each day is a constant value
+of the Julian day. If left blank, it is assumed the \code{tmean} input has a time
+attribute and the raster will be derived using \code{terra::time}.}
+
+\item{reference}{The albedo of the reference surface ranging from 0 - 1.
+Defaults to 0.23 for grass.}
+
+\item{z}{The zoom level download elevation data at ranging from 1 - 14.
+One if coarser resolution, 14 is finer resolution. For more information,
+look at \code{?elevatr::get_elev_raster}}
+
+\item{method}{The method to calculate ETo. Can either be "penman" or "hargreaves".}
+}
+\value{
+A \code{terra::rast} timeseries of ETo for the input domain.
 }
 \description{
 Calculate a timeseries of ETo across a set of input rasters. Assumes that all
-inputs share the same resolution, extent, projection and number of layers.
+inputs share the same resolution, extent, projection. Also assumes that
+rasters have the number of layers with each layer corresponding to a day.
+For hargreaves, only tmean, tmin and tmax are required arguments. For PM,
+tmean, srad, rh, and ws must all be supplied.
+}
+\examples{
+\dontrun{
+  srad <- terra::rast(srad) \%>\% terra::subset(1)
+tmean <- terra::rast(tmean) \%>\% terra::subset(1) \%>\%  {. - 273.15}
+ <- terra::rast(tmax) \%>\% terra::subset(1) \%>\%  {. - 273.15}
+tmin <- terra::rast(tmin) \%>\% terra::subset(1) \%>\%  {. - 273.15}
+rh <- terra::rast(rh) \%>\% terra::subset(1)
+ws <- terra::rast(ws) \%>\% terra::subset(1)
+
+penman <- calc_etr_spatial(
+  tmean = tmean, srad = srad, rh = rh, ws = ws,
+  method = "penman", reference = 0.23, z = 3
+)
+hargreaves <- calc_etr_spatial(
+  tmean = tmean, tmax = tmax, tmin = tmin, method = "hargreaves", z = 3
+)
+}
 }

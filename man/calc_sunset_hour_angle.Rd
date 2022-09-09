@@ -17,3 +17,6 @@ The solar sunset hour angle in radians
 \description{
 Given the latitude and solar declination, calculate the sunset hour angle.
 }
+\examples{
+calc_sunset_hour_angle(0.5, 1)
+}

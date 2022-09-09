@@ -17,3 +17,6 @@ The actual vapor pressure in kPa.
 \description{
 Calculate the actual vapor pressure given the saturation vapor pressure and relative humidity.
 }
+\examples{
+calc_act_vapor_pressure(0.5, 88)
+}
