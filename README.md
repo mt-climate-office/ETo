@@ -1,13 +1,22 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# ETo
+# ETo: Daily Reference ET Calculations for Rasters
 
 <!-- badges: start -->
+
+[![R-CMD-check](https://github.com/mt-climate-office/ETo/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/mt-climate-office/ETo/actions/workflows/R-CMD-check.yaml)
+[![test-coverage](https://github.com/mt-climate-office/ETo/actions/workflows/test-coverage.yaml/badge.svg)](https://github.com/mt-climate-office/ETo/actions/workflows/test-coverage.yaml)
 <!-- badges: end -->
 
 ETo provides basic utility functions for calculating point-based and
-spatial daily reference ET.
+spatial daily reference ET. Currently, the Penman-Monteith and
+Hargreaves methods are implemented. Functions are also provided to
+calculate all necessary intermediate variables for calculating ETo. The
+only input variables needed to calculate ETo are daily average
+temperature, min temperature and max temperature (for Hargreaves), or
+daily average temperature, relative humidity, solar radiation and
+windspeed (for Penman-Monteith).
 
 ## Installation
 
@@ -21,36 +30,14 @@ devtools::install_github("mt-climate-office/ETo")
 
 ## Example
 
-This is a basic example which shows you how to solve a common problem:
+Below, the [downscaled
+CMIP6](https://www.nccs.nasa.gov/services/data-collections/land-based-products/nex-gddp-cmip6)
+data for Montana that are provided with the package are used to
+calculate and compare different ETo methods:
 
-``` r
-library(ETo)
-## basic example code
-```
+    #> Warning: [boundaries] boundary detection is only done for the first layer
+    #> Mosaicing & Projecting
+    #> Clipping DEM to bbox
+    #> Note: Elevation units are in meters.
 
-What is special about using `README.Rmd` instead of just `README.md`?
-You can include R chunks like so:
-
-``` r
-summary(cars)
-#>      speed           dist       
-#>  Min.   : 4.0   Min.   :  2.00  
-#>  1st Qu.:12.0   1st Qu.: 26.00  
-#>  Median :15.0   Median : 36.00  
-#>  Mean   :15.4   Mean   : 42.98  
-#>  3rd Qu.:19.0   3rd Qu.: 56.00  
-#>  Max.   :25.0   Max.   :120.00
-```
-
-You’ll still need to render `README.Rmd` regularly, to keep `README.md`
-up-to-date. `devtools::build_readme()` is handy for this. You could also
-use GitHub Actions to re-render `README.Rmd` every time you push. An
-example workflow can be found here:
-<https://github.com/r-lib/actions/tree/v1/examples>.
-
-You can also embed plots, for example:
-
-<img src="man/figures/README-pressure-1.png" width="100%" />
-
-In that case, don’t forget to commit and push the resulting figure
-files, so they display on GitHub and CRAN.
+<img src="man/figures/README-example-1.png" width="100%" />

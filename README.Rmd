@@ -13,12 +13,14 @@ knitr::opts_chunk$set(
 )
 ```
 
-# ETo
+# ETo: Daily Reference ET Calculations for Rasters
 
 <!-- badges: start -->
+[![R-CMD-check](https://github.com/mt-climate-office/ETo/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/mt-climate-office/ETo/actions/workflows/R-CMD-check.yaml)
+[![test-coverage](https://github.com/mt-climate-office/ETo/actions/workflows/test-coverage.yaml/badge.svg)](https://github.com/mt-climate-office/ETo/actions/workflows/test-coverage.yaml)
 <!-- badges: end -->
 
-ETo provides basic utility functions for calculating point-based and spatial daily reference ET.
+ETo provides basic utility functions for calculating point-based and spatial daily reference ET. Currently, the Penman-Monteith and Hargreaves methods are implemented. Functions are also provided to calculate all necessary intermediate variables for calculating ETo. The only input variables needed to calculate ETo are daily average temperature, min temperature and max temperature (for Hargreaves), or daily average temperature, relative humidity, solar radiation and windspeed (for Penman-Monteith).
 
 ## Installation
 
@@ -31,25 +33,41 @@ devtools::install_github("mt-climate-office/ETo")
 
 ## Example
 
-This is a basic example which shows you how to solve a common problem:
+Below, the [downscaled CMIP6](https://www.nccs.nasa.gov/services/data-collections/land-based-products/nex-gddp-cmip6) data for Montana that are provided with the package are used to calculate and compare different ETo methods:
 
-```{r example}
+```{r example, echo=FALSE}
 library(ETo)
-## basic example code
+
+# Load data. Need to read with terra::rast to unpack to a raster.
+srad <- terra::rast(srad) |> terra::subset(1:10)
+tmean <- terra::rast(tmean) |> terra::subset(1:10) 
+# Convert from K to C
+tmean <- tmean - 273.15
+tmax <- terra::rast(tmax) |> terra::subset(1:10) 
+# Convert from K to C
+tmax <- tmax - 273.15
+tmin <- terra::rast(tmin) |> terra::subset(1:10) 
+# Convert from K to C
+tmin <- tmin - 273.15
+rh <- terra::rast(rh) |> terra::subset(1:10)
+ws <- terra::rast(ws) |> terra::subset(1:10)
+
+# Get a raster grid of elevation for the domain.
+elev <- get_elev_from_raster(tmean, z = 3)
+
+# Calculate timeseries of Penman Montieth
+penman <- calc_etr_spatial(
+ tmean = tmean, srad = srad, rh = rh, ws = ws,
+ method = "penman", reference = 0.23, elev = elev
+)
+
+# Calculate timeseries of Hargreaves
+hargreaves <- calc_etr_spatial(
+ tmean = tmean, tmax = tmax, tmin = tmin, method = "hargreaves", elev = elev
+)
+
+diff <- penman - hargreaves
+
+# Plot the difference (in mm) between the two methods.
+terra::plot(diff, range = c(-0.6, 1.5))
 ```
-
-What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
-
-```{r cars}
-summary(cars)
-```
-
-You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this. You could also use GitHub Actions to re-render `README.Rmd` every time you push. An example workflow can be found here: <https://github.com/r-lib/actions/tree/v1/examples>.
-
-You can also embed plots, for example:
-
-```{r pressure, echo = FALSE}
-plot(pressure)
-```
-
-In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.

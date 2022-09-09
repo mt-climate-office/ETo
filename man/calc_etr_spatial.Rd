@@ -2,8 +2,7 @@
 % Please edit documentation in R/process.R
 \name{calc_etr_spatial}
 \alias{calc_etr_spatial}
-\title{Calculate spatial daily reference ET using either the Penman-Monteith
-method or the Hargreaves method.}
+\title{Calculate a timeseries of ETo across a set of input rasters.}
 \usage{
 calc_etr_spatial(
   tmean,
@@ -13,36 +12,31 @@ calc_etr_spatial(
   rh = NULL,
   ws = NULL,
   elev = NULL,
-  day = NULL,
-  lat = NULL,
+  days = NULL,
   reference = 0.23,
   z = 9,
   method = "penman"
 )
 }
 \arguments{
-\item{tmean}{A \code{terra::rast} of daily average temperature in degrees C.}
+\item{tmean}{A multilayer timeseries \code{terra::rast} of mean daily temperature in degrees C.}
 
-\item{tmin}{A \code{terra::rast} of  daily min temperature in degrees C.}
+\item{tmin}{A multilayer timeseries \code{terra::rast} of max daily temperature in degrees C.}
 
-\item{tmax}{A \code{terra::rast} of  daily max temperature in degrees C.}
+\item{tmax}{A multilayer timeseries \code{terra::rast} of min daily temperature in degrees C.}
 
-\item{srad}{A \code{terra::rast} of  daily downwelling shortwave solar radiaiton in W m^-2}
+\item{srad}{A multilayer timeseries \code{terra::rast} of daily solar radiation in W m^-2.}
 
-\item{rh}{A \code{terra::rast} of  daily relative humidity (\%).}
+\item{rh}{A multilayer timeseries \code{terra::rast} of mean daily relative humidity (\%).}
 
-\item{ws}{A \code{terra::rast} of  daily average wind speed at 2m in M s^-1}
+\item{ws}{A multilayer timeseries \code{terra::rast} of mean daily wind speed at 2m height in m s^-1.}
 
-\item{elev}{A \code{terra::rast} of elevation in meters across the domain. If the
-argument is left blank, elevation data are downloaded using the \code{elevatr}
-package.}
+\item{elev}{A \code{terra::rast} of elevation in meters. If left blank, elevation will
+be derived using the \code{elevatr} package.}
 
-\item{day}{The Julian day of the year ETo is being calculated for. Can either
-be an integer or a date object.}
-
-\item{lat}{A \code{terra::rast} of latitude with the same resolution, projection,
-and extent as all other input rasters. If left blank, a latitude raster will
-be derived from the \code{tmean} input.}
+\item{days}{A multilayer timeseries \code{terra::rast} where each day is a constant value
+of the Julian day. If left blank, it is assumed the \code{tmean} input has a time
+attribute and the raster will be derived using \code{terra::time}.}
 
 \item{reference}{The albedo of the reference surface ranging from 0 - 1.
 Defaults to 0.23 for grass.}
@@ -54,29 +48,41 @@ look at \code{?elevatr::get_elev_raster}}
 \item{method}{The method to calculate ETo. Can either be "penman" or "hargreaves".}
 }
 \value{
-A \code{terra::rast} of daily reference ET.
+A \code{terra::rast} timeseries of ETo for the input domain.
 }
 \description{
-Calculate spatial daily reference ET using either the Penman-Monteith
-method or the Hargreaves method.
+Assumes that all inputs share the same resolution, extent, projection. Also assumes that
+rasters have the number of layers with each layer corresponding to a day.
+For hargreaves, only tmean, tmin and tmax are required arguments. For PM,
+tmean, srad, rh, and ws must all be supplied.
 }
 \examples{
 \dontrun{
+srad <- terra::rast(srad) |> terra::subset(10)
+tmean <- terra::rast(tmean) |>
+  terra::subset(10) |>
+  {
+    . - 273.15
+  }
+tmax <- terra::rast(tmax) |>
+  terra::subset(10) |>
+  {
+    . - 273.15
+  }
+tmin <- terra::rast(tmin) |>
+  terra::subset(10) |>
+  {
+    . - 273.15
+  }
+rh <- terra::rast(rh) |> terra::subset(10)
+ws <- terra::rast(ws) |> terra::subset(10)
 
-# Calculate ETo across Montana for 2015-01-01
-srad <- terra::rast(srad) \%>\% terra::subset(1)
-tmean <- terra::rast(tmean) \%>\% terra::subset(1)
-tmax <- terra::rast(tmax) \%>\% terra::subset(1)
-tmin <- terra::rast(tmin) \%>\% terra::subset(1)
-rh <- terra::rast(rh) \%>\% terra::subset(1)
-ws <- terra::rast(ws) \%>\% terra::subset(1)
-
-penman <- calc_etr_spatial(
+penman <- calc_etr_spatial_stacked(
   tmean = tmean, srad = srad, rh = rh, ws = ws,
-  method = "penman", reference = 0.23, z = 9
+  method = "penman", reference = 0.23, z = 3
 )
-hargreaves <- calc_etr_spatial(
-  tmean = tmean, tmax = tmax, tmin = tmin, method = "hargreaves"
+hargreaves <- calc_etr_spatial_stacked(
+  tmean = tmean, tmax = tmax, tmin = tmin, method = "hargreaves", z = 3
 )
 }
 }

@@ -23,8 +23,8 @@ Latitude/longitude must be in degrees with a geographic projection.
 }
 \examples{
 \dontrun{
-xs = c(-113.994, -111.032)
-ys = c(46.8721, 45.6815)
+xs <- c(-113.994, -111.032)
+ys <- c(46.8721, 45.6815)
 
 # Get elevation of Missoula and Bozeman.
 elev <- get_elev_from_point(ys, xs)

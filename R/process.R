@@ -11,8 +11,8 @@
 #'
 #' @examples
 #' \dontrun{
-#' xs = c(-113.994, -111.032)
-#' ys = c(46.8721, 45.6815)
+#' xs <- c(-113.994, -111.032)
+#' ys <- c(46.8721, 45.6815)
 #'
 #' # Get elevation of Missoula and Bozeman.
 #' elev <- get_elev_from_point(ys, xs)
@@ -49,103 +49,15 @@ get_elev_from_raster <- function(r, z) {
   terra::boundaries(r) |>
     terra::as.polygons() |>
     sf::st_as_sf() |>
-    elevatr::get_elev_raster(z = z, clip="bbox") |>
+    elevatr::get_elev_raster(z = z, clip = "bbox") |>
     terra::rast() |>
     terra::project(r)
 }
 
-#' Calculate spatial daily reference ET using either the Penman-Monteith
-#' method or the Hargreaves method.
+#' Calculate a timeseries of ETo across a set of input rasters.
 #'
-#' @param tmean A `terra::rast` of daily average temperature in degrees C.
-#' @param tmin A `terra::rast` of  daily min temperature in degrees C.
-#' @param tmax A `terra::rast` of  daily max temperature in degrees C.
-#' @param srad A `terra::rast` of  daily downwelling shortwave solar radiaiton in W m^-2
-#' @param rh A `terra::rast` of  daily relative humidity (%).
-#' @param ws A `terra::rast` of  daily average wind speed at 2m in M s^-1
-#' @param elev A `terra::rast` of elevation in meters across the domain. If the
-#' argument is left blank, elevation data are downloaded using the `elevatr`
-#' package.
-#' @param day The Julian day of the year ETo is being calculated for. Can either
-#' be an integer or a date object.
-#' @param lat A `terra::rast` of latitude with the same resolution, projection,
-#' and extent as all other input rasters. If left blank, a latitude raster will
-#' be derived from the `tmean` input.
-#' @param reference The albedo of the reference surface ranging from 0 - 1.
-#' Defaults to 0.23 for grass.
-#' @param z The zoom level download elevation data at ranging from 1 - 14.
-#' One if coarser resolution, 14 is finer resolution. For more information,
-#' look at `?elevatr::get_elev_raster`
-#' @param method The method to calculate ETo. Can either be "penman" or "hargreaves".
-#'
-#' @return A `terra::rast` of daily reference ET.
-#' @export
-#'
-#' @examples
-#' \dontrun{
-#'
-#' # Calculate ETo across Montana for 2015-01-01
-#' srad <- terra::rast(srad) %>% terra::subset(1)
-#' tmean <- terra::rast(tmean) %>% terra::subset(1)
-#' tmax <- terra::rast(tmax) %>% terra::subset(1)
-#' tmin <- terra::rast(tmin) %>% terra::subset(1)
-#' rh <- terra::rast(rh) %>% terra::subset(1)
-#' ws <- terra::rast(ws) %>% terra::subset(1)
-#'
-#' penman <- calc_etr_spatial(
-#'   tmean = tmean, srad = srad, rh = rh, ws = ws,
-#'   method = "penman", reference = 0.23, z = 9
-#' )
-#' hargreaves <- calc_etr_spatial(
-#'   tmean = tmean, tmax = tmax, tmin = tmin, method = "hargreaves"
-#' )
-#' }
-calc_etr_spatial <- function(
-  tmean, tmin = NULL, tmax = NULL, srad = NULL, rh = NULL, ws = NULL, elev = NULL,
-  day = NULL, lat = NULL, reference = 0.23, z = 9, method = "penman"
-) {
-
-  checkmate::assert_choice(method, c("penman", "hargreaves"))
-  if (is.null(elev)) {
-    elev <- get_elev_from_raster(tmean, z = z)
-  }
-
-  if (is.null(day)) {
-    day <- terra::time(tmean)
-  }
-
-  if (is.null(lat)) {
-    lat <- terra::deepcopy(tmean)
-    lat[] <- terra::xyFromCell(lat, 1:terra::ncell(lat))[,2]
-  }
-
-  if (method == "penman") {
-    checkmate::assert_class(tmean, "SpatRaster")
-    checkmate::assert_class(srad, "SpatRaster")
-    checkmate::assert_class(rh, "SpatRaster")
-    checkmate::assert_class(ws, "SpatRaster")
-
-    eto <- etr_penman_monteith(
-      lat = lat, day = day, rh = rh, temp = tmean, srad = srad, ws = ws,
-      elev = elev, reference = reference
-    )
-  } else {
-    checkmate::assert_class(tmean, "SpatRaster")
-    checkmate::assert_class(tmax, "SpatRaster")
-    checkmate::assert_class(tmin, "SpatRaster")
-
-    eto <- etr_hargreaves(
-      tmin = tmin, tmax = tmax, tmean = tmean, lat = lat, day = day
-    )
-  }
-
-  return(eto)
-
-}
-
-#' Calculate a timeseries of ETo across a set of input rasters. Assumes that all
-#' inputs share the same resolution, extent, projection. Also assumes that
-#'  rasters have the number of layers with each layer corresponding to a day.
+#' @description  Assumes that all inputs share the same resolution, extent, projection. Also assumes that
+#' rasters have the number of layers with each layer corresponding to a day.
 #' For hargreaves, only tmean, tmin and tmax are required arguments. For PM,
 #' tmean, srad, rh, and ws must all be supplied.
 #'
@@ -172,26 +84,35 @@ calc_etr_spatial <- function(
 #'
 #' @examples
 #' \dontrun{
-#' srad <- terra::rast(srad) %>% terra::subset(1)
-#' tmean <- terra::rast(tmean) %>% terra::subset(1) %>%  {. - 273.15}
-#' tmax <- terra::rast(tmax) %>% terra::subset(1) %>%  {. - 273.15}
-#' tmin <- terra::rast(tmin) %>% terra::subset(1) %>%  {. - 273.15}
-#' rh <- terra::rast(rh) %>% terra::subset(1)
-#' ws <- terra::rast(ws) %>% terra::subset(1)
+#' srad <- terra::rast(srad) |> terra::subset(10)
+#' tmean <- terra::rast(tmean) |>
+#'   terra::subset(10) |>
+#'   {
+#'     . - 273.15
+#'   }
+#' tmax <- terra::rast(tmax) |>
+#'   terra::subset(10) |>
+#'   {
+#'     . - 273.15
+#'   }
+#' tmin <- terra::rast(tmin) |>
+#'   terra::subset(10) |>
+#'   {
+#'     . - 273.15
+#'   }
+#' rh <- terra::rast(rh) |> terra::subset(10)
+#' ws <- terra::rast(ws) |> terra::subset(10)
 #'
-#' penman <- calc_etr_spatial(
+#' penman <- calc_etr_spatial_stacked(
 #'   tmean = tmean, srad = srad, rh = rh, ws = ws,
 #'   method = "penman", reference = 0.23, z = 3
 #' )
-#' hargreaves <- calc_etr_spatial(
+#' hargreaves <- calc_etr_spatial_stacked(
 #'   tmean = tmean, tmax = tmax, tmin = tmin, method = "hargreaves", z = 3
 #' )
 #' }
-calc_etr_spatial_stacked <- function(
-    tmean, tmin = NULL, tmax = NULL, srad = NULL, rh = NULL, ws = NULL, elev = NULL,
-    days = NULL, reference = 0.23, z = 9, method = "penman"
-) {
-
+calc_etr_spatial <- function(tmean, tmin = NULL, tmax = NULL, srad = NULL, rh = NULL, ws = NULL, elev = NULL,
+                                     days = NULL, reference = 0.23, z = 9, method = "penman") {
   checkmate::assert_choice(method, c("penman", "hargreaves"))
 
   if (is.null(elev)) {
@@ -212,7 +133,7 @@ calc_etr_spatial_stacked <- function(
   }
 
   lat <- terra::deepcopy(tmean[[1]])
-  lat[] <- terra::xyFromCell(lat, 1:terra::ncell(lat))[,2]
+  lat[] <- terra::xyFromCell(lat, 1:terra::ncell(lat))[, 2]
 
   ref <- terra::deepcopy(tmean[[1]])
   ref[] <- reference
@@ -227,12 +148,12 @@ calc_etr_spatial_stacked <- function(
 
     v_etr <- Vectorize(etr_penman_monteith)
     ETo <- terra::lapp(x = dataset, v_etr)
-
   } else {
-
     dataset <- terra::sds(tmin, tmax, tmean, lat, days)
     v_hg <- Vectorize(etr_hargreaves)
     ETo <- terra::lapp(dataset, v_hg)
-
   }
+
+  terra::time(ETo) <- terra::time(days)
+  return(ETo)
 }
