@@ -4,7 +4,7 @@
 \alias{etr_hargreaves}
 \title{Calculate reference ET using the Hargreaves method.}
 \usage{
-etr_hargreaves(tmin, tmax, tmean, lat, day, srad = NULL)
+etr_hargreaves(tmin, tmax, tmean, lat, days, srad = NULL)
 }
 \arguments{
 \item{tmin}{The minimum air temperature in deg C.}
@@ -15,10 +15,10 @@ etr_hargreaves(tmin, tmax, tmean, lat, day, srad = NULL)
 
 \item{lat}{The latitude of the measurements degrees.}
 
-\item{day}{The julian day of the measurement. Can either be an integer or date object.}
-
 \item{srad}{Downwelling shortwave radiaiton in W m^-2. Defaults to NULL. If
 left as null, srad will be estimated using latitude and julian day.}
+
+\item{day}{The julian day of the measurement. Can either be an integer or date object.}
 }
 \value{
 Daily reference ET in mm day^-1

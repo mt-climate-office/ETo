@@ -13,16 +13,16 @@
 #'
 #' @examples
 #' etr_hargreaves(10, 15, 5, 30, 150)
-etr_hargreaves <- function(tmin, tmax, tmean, lat, day, srad = NULL) {
+etr_hargreaves <- function(tmin, tmax, tmean, lat, days, srad = NULL) {
   checkmate::assert_multi_class(
-    c(tmin, tmax, tmean, lat, day, srad),
+    c(tmin, tmax, tmean, lat, days, srad),
     c("numeric", "SpatRaster")
   )
   if (is.null(srad)) {
     lat <- lat_to_radians(lat)
-    declination <- calc_solar_declination(day)
+    declination <- calc_solar_declination(days)
     sunset_hour_angle <- calc_sunset_hour_angle(lat, declination)
-    inverse_distance <- calc_inverse_relative_distance(day)
+    inverse_distance <- calc_inverse_relative_distance(days)
 
     # Credit to: https://github.com/woodcrafty/PyETo/blob/master/pyeto/fao.py
     tmp1 <- (24.0 * 60.0) / pi

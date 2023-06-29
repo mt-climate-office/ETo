@@ -4,16 +4,12 @@
 \alias{etr_penman_monteith}
 \title{Calculate daily total reference ET at a given point.}
 \usage{
-etr_penman_monteith(lat, day, rh, temp, srad, ws, elev, reference = 0.23)
+etr_penman_monteith(lat, days, rh, tmean, srad, ws, elev, reference = 0.23)
 }
 \arguments{
 \item{lat}{Latitude of ETo calculation in degrees.}
 
-\item{day}{The julian day ETo is being calculated on.}
-
 \item{rh}{Relative humidity (\%).}
-
-\item{temp}{Air temperature in Celsius.}
 
 \item{srad}{Shortwave radiation in W m^-2.}
 
@@ -22,6 +18,10 @@ etr_penman_monteith(lat, day, rh, temp, srad, ws, elev, reference = 0.23)
 \item{elev}{Elevation in meters.}
 
 \item{reference}{The albedo of the reference surface (defaults to 0.23 for grass).}
+
+\item{day}{The julian day ETo is being calculated on.}
+
+\item{temp}{Air temperature in Celsius.}
 }
 \value{
 Reference ET in mm per day.

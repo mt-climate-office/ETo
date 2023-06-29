@@ -142,14 +142,17 @@ calc_etr_spatial <- function(tmean, tmin = NULL, tmax = NULL, srad = NULL, rh = 
     checkmate::assert_class(rh, "SpatRaster")
     checkmate::assert_class(ws, "SpatRaster")
 
-    dataset <- terra::sds(lat, days, rh, tmean, srad, ws, elev, ref)
+    # dataset <- terra::sds(lat, days, rh, tmean, srad, ws, elev, ref)
 
-    v_etr <- Vectorize(etr_penman_monteith)
-    ETo <- terra::lapp(x = dataset, v_etr)
+    ETo <- etr_penman_monteith(lat, days, rh, tmean, srad, ws, elev, ref)
+#
+#     # v_etr <- Vectorize(etr_penman_monteith)
+#     ETo <- terra::lapp(x = dataset, etr_penman_monteith, usenames = TRUE)
   } else {
-    dataset <- terra::sds(tmin, tmax, tmean, lat, days)
-    v_hg <- Vectorize(etr_hargreaves)
-    ETo <- terra::lapp(dataset, v_hg)
+    # dataset <- terra::sds(tmin, tmax, tmean, lat, days)
+    # v_hg <- Vectorize(etr_hargreaves)
+    # ETo <- terra::lapp(dataset, v_hg)
+    ETo <- etr_hargreaves(tmin, tmax, tmean, lat, days)
   }
 
   terra::time(ETo) <- terra::time(days)

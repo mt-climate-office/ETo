@@ -26,6 +26,7 @@ projection of an input raster.
 }
 \examples{
 \dontrun{
+# test
 r <- terra::rast(rh)[[1]]
 elev <- get_elev_from_raster(r, 9)
 terra::plot(elev)
