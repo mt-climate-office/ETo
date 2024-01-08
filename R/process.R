@@ -155,7 +155,7 @@ calc_etr_spatial <- function(
 
     ETo <- etr_penman_monteith(
       lat = lat, days = days, rh_mean = rh, rh_min = rh_min, rh_max = rh_max,
-      t_mean = t_mean, t_min = t_min, t_max = t_max, srad = srad, ws = ws, elev = elev, ref = ref
+      t_mean = t_mean, t_min = t_min, t_max = t_max, srad = srad, ws = ws, elev = elev, reference = reference
     )
 #     # v_etr <- Vectorize(etr_penman_monteith)
 #     ETo <- terra::lapp(x = dataset, etr_penman_monteith, usenames = TRUE)
