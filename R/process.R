@@ -61,19 +61,19 @@ get_elev_from_raster <- function(r, z, verbose = FALSE) {
 #'
 #' @description  Assumes that all inputs share the same resolution, extent, projection. Also assumes that
 #' rasters have the number of layers with each layer corresponding to a day.
-#' For hargreaves, only tmean, tmin and tmax are required arguments. For PM,
-#' tmean, srad, rh, and ws must all be supplied.
+#' For hargreaves, only t_mean, t_min and t_max are required arguments. For PM,
+#' t_mean, srad, rh, and ws must all be supplied.
 #'
-#' @param tmean A multilayer timeseries `terra::rast` of mean daily temperature in degrees C.
-#' @param tmin A multilayer timeseries `terra::rast` of max daily temperature in degrees C.
-#' @param tmax A multilayer timeseries `terra::rast` of min daily temperature in degrees C.
+#' @param t_mean A multilayer timeseries `terra::rast` of mean daily temperature in degrees C.
+#' @param t_min A multilayer timeseries `terra::rast` of max daily temperature in degrees C.
+#' @param t_max A multilayer timeseries `terra::rast` of min daily temperature in degrees C.
 #' @param srad A multilayer timeseries `terra::rast` of daily solar radiation in W m^-2.
 #' @param rh A multilayer timeseries `terra::rast` of mean daily relative humidity (%).
 #' @param ws A multilayer timeseries `terra::rast` of mean daily wind speed at 2m height in m s^-1.
 #' @param elev A `terra::rast` of elevation in meters. If left blank, elevation will
 #' be derived using the `elevatr` package.
 #' @param days A multilayer timeseries `terra::rast` where each day is a constant value
-#' of the Julian day. If left blank, it is assumed the `tmean` input has a time
+#' of the Julian day. If left blank, it is assumed the `t_mean` input has a time
 #' attribute and the raster will be derived using `terra::time`.
 #' @param reference The albedo of the reference surface ranging from 0 - 1.
 #' Defaults to 0.23 for grass.
@@ -89,40 +89,43 @@ get_elev_from_raster <- function(r, z, verbose = FALSE) {
 #' \dontrun{
 #' # Load data. Need to read with terra::rast to unpack to a raster.
 #' srad <- terra::rast(srad) |> terra::subset(1:10)
-#' tmean <- terra::rast(tmean) |> terra::subset(1:10)
+#' t_mean <- terra::rast(t_mean) |> terra::subset(1:10)
 #' # Convert from K to C
-#' tmean <- tmean - 273.15
-#' tmax <- terra::rast(tmax) |> terra::subset(1:10)
+#' t_mean <- t_mean - 273.15
+#' t_max <- terra::rast(t_max) |> terra::subset(1:10)
 #' # Convert from K to C
-#' tmax <- tmax - 273.15
-#' tmin <- terra::rast(tmin) |> terra::subset(1:10)
+#' t_max <- t_max - 273.15
+#' t_min <- terra::rast(t_min) |> terra::subset(1:10)
 #' # Convert from K to C
-#' tmin <- tmin - 273.15
+#' t_min <- t_min - 273.15
 #' rh <- terra::rast(rh) |> terra::subset(1:10)
 #' ws <- terra::rast(ws) |> terra::subset(1:10)
 #'
 #' penman <- calc_etr_spatial(
-#'   tmean = tmean, srad = srad, rh = rh, ws = ws,
+#'   t_mean = t_mean, srad = srad, rh = rh, ws = ws,
 #'   method = "penman", reference = 0.23, z = 3
 #' )
 #' hargreaves <- calc_etr_spatial(
-#'   tmean = tmean, tmax = tmax, tmin = tmin, method = "hargreaves", z = 3
+#'   t_mean = t_mean, t_max = t_max, t_min = t_min, method = "hargreaves", z = 3
 #' )
 #' }
-calc_etr_spatial <- function(tmean, tmin = NULL, tmax = NULL, srad = NULL, rh = NULL, ws = NULL, elev = NULL,
-                                     days = NULL, reference = 0.23, z = 9, method = "penman") {
+calc_etr_spatial <- function(
+    t_mean = NULL, t_min = NULL, t_max = NULL, srad = NULL, rh = NULL,
+    rh_min = NULL, rh_max = NULL, ws = NULL, elev = NULL,
+    days = NULL, reference = 0.23, z = 9, method = "penman"
+) {
   checkmate::assert_choice(method, c("penman", "hargreaves"))
 
   if (is.null(elev)) {
-    elev <- get_elev_from_raster(tmean[[1]], z = z)
+    elev <- get_elev_from_raster(t_mean[[1]], z = z)
   }
 
   if (is.null(days)) {
-    days <- terra::time(tmean) |>
+    days <- terra::time(t_mean) |>
       lapply(function(x) {
         jday <- format(x, "%j") |>
           as.numeric()
-        temp <- terra::deepcopy(tmean[[1]])
+        temp <- terra::deepcopy(t_mean[[1]])
         temp[] <- jday
         terra::time(temp) <- x
         temp
@@ -130,29 +133,35 @@ calc_etr_spatial <- function(tmean, tmin = NULL, tmax = NULL, srad = NULL, rh = 
       terra::rast()
   }
 
-  lat <- terra::deepcopy(tmean[[1]])
+  lat <- terra::deepcopy(t_mean[[1]])
   lat[] <- terra::xyFromCell(lat, 1:terra::ncell(lat))[, 2]
 
-  ref <- terra::deepcopy(tmean[[1]])
+  ref <- terra::deepcopy(t_mean[[1]])
   ref[] <- reference
 
   if (method == "penman") {
-    checkmate::assert_class(tmean, "SpatRaster")
+    checkmate::assert_multi_class(t_mean, c("SpatRaster", "NULL"))
+    checkmate::assert_multi_class(t_min,  c("SpatRaster", "NULL"))
+    checkmate::assert_multi_class(t_max,  c("SpatRaster", "NULL"))
     checkmate::assert_class(srad, "SpatRaster")
-    checkmate::assert_class(rh, "SpatRaster")
+    checkmate::assert_multi_class(rh,  c("SpatRaster", "NULL"))
+    checkmate::assert_multi_class(rh_min,  c("SpatRaster", "NULL"))
+    checkmate::assert_multi_class(rh_max,  c("SpatRaster", "NULL"))
     checkmate::assert_class(ws, "SpatRaster")
 
-    # dataset <- terra::sds(lat, days, rh, tmean, srad, ws, elev, ref)
+    # dataset <- terra::sds(lat, days, rh, t_mean, srad, ws, elev, ref)
 
-    ETo <- etr_penman_monteith(lat, days, rh, tmean, srad, ws, elev, ref)
-#
+    ETo <- etr_penman_monteith(
+      lat = lat, days = days, rh_mean = rh, rh_min = rh_min, rh_max = rh_max,
+      t_mean = t_mean, t_min = t_min, t_max = t_max, srad = srad, ws = ws, elev = elev, ref = ref
+    )
 #     # v_etr <- Vectorize(etr_penman_monteith)
 #     ETo <- terra::lapp(x = dataset, etr_penman_monteith, usenames = TRUE)
   } else {
-    # dataset <- terra::sds(tmin, tmax, tmean, lat, days)
+    # dataset <- terra::sds(t_min, t_max, t_mean, lat, days)
     # v_hg <- Vectorize(etr_hargreaves)
     # ETo <- terra::lapp(dataset, v_hg)
-    ETo <- etr_hargreaves(tmin, tmax, tmean, lat, days)
+    ETo <- etr_hargreaves(t_min, t_max, t_mean, lat, days)
   }
 
   terra::time(ETo) <- terra::time(days)

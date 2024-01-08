@@ -4,7 +4,13 @@
 \alias{calc_longwave_radiation}
 \title{Calculate the outgoing longwave radiation.}
 \usage{
-calc_longwave_radiation(temp, act_vapor_pressure, radiation_fraction)
+calc_longwave_radiation(
+  temp,
+  act_vapor_pressure,
+  radiation_fraction,
+  tmin = NULL,
+  tmax = NULL
+)
 }
 \arguments{
 \item{temp}{The air temperature in degrees C.}
@@ -12,6 +18,10 @@ calc_longwave_radiation(temp, act_vapor_pressure, radiation_fraction)
 \item{act_vapor_pressure}{The actual vapor pressure. Can be calculated with \code{calc_act_vapor_pressure}.}
 
 \item{radiation_fraction}{The fraction of radiation relative to clear sky. Can be calculated with \code{calc_radiation_fraction}.}
+
+\item{tmin}{The daily minimum temperature. Defaults to \code{NULL}. If specified with tmax, they are used in place of \code{temp}.}
+
+\item{tmax}{The daily maximum temperature. Defaults to \code{NULL}. If specified with tmin, they are used in place of \code{temp}.}
 }
 \value{
 The outgoing longwave radiation in MJ m^-2 day^-1.

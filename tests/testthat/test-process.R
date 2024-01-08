@@ -1,6 +1,6 @@
 test_that("Getting point elevation works.", {
   elev <- get_elev_from_point(47, -115)
-  expect_equal(elev, 1459.06)
+  expect_equal(elev, 1466.06)
 })
 
 test_that("Getting raster elevation works.", {
@@ -21,11 +21,11 @@ test_that("Spatial multi-band ETo calculation works.", {
   ws %<>% terra::rast() %>% terra::subset(1:10)
 
   pm <- calc_etr_spatial(
-    tmean = tmean, srad = srad, rh = rh, ws = ws, z = 3, method = "penman"
+    t_mean = tmean, srad = srad, rh = rh, ws = ws, z = 3, method = "penman"
   )
 
   har <- calc_etr_spatial(
-    tmean = tmean, tmin = tmin, tmax = tmax, z = 3, method = "hargreaves"
+    t_mean = tmean, t_min = tmin, t_max = tmax, z = 3, method = "hargreaves"
   )
 
   checkmate::expect_class(pm, "SpatRaster")

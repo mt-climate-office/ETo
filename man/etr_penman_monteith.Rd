@@ -2,9 +2,24 @@
 % Please edit documentation in R/penman_monteith.R
 \name{etr_penman_monteith}
 \alias{etr_penman_monteith}
-\title{Calculate daily total reference ET at a given point.}
+\title{Calculate daily total reference ET at a given point. Follows the steps outlined
+in Zotarelli et al (2010) \url{https://unpkg.com/node-red-contrib-evapotranspiration@1.0.1/alogorithms/evapotranspiration\%20ae45900.pdf}.}
 \usage{
-etr_penman_monteith(lat, days, rh, tmean, srad, ws, elev, reference = 0.23)
+etr_penman_monteith(
+  lat,
+  days,
+  rh = NULL,
+  rhmin = NULL,
+  rhmax = NULL,
+  tmean = NULL,
+  tmin = NULL,
+  tmax = NULL,
+  srad,
+  ws,
+  elev,
+  reference = 0.23,
+  wind_height = 2
+)
 }
 \arguments{
 \item{lat}{Latitude of ETo calculation in degrees.}
@@ -19,6 +34,8 @@ etr_penman_monteith(lat, days, rh, tmean, srad, ws, elev, reference = 0.23)
 
 \item{reference}{The albedo of the reference surface (defaults to 0.23 for grass).}
 
+\item{wind_height}{The height of the wind observation in meters. (defaults to 2). If it is not 2 meters, the wind speed will be corrected to a 2 meter observation.}
+
 \item{day}{The julian day ETo is being calculated on.}
 
 \item{temp}{Air temperature in Celsius.}
@@ -27,7 +44,8 @@ etr_penman_monteith(lat, days, rh, tmean, srad, ws, elev, reference = 0.23)
 Reference ET in mm per day.
 }
 \description{
-Calculate daily total reference ET at a given point.
+Calculate daily total reference ET at a given point. Follows the steps outlined
+in Zotarelli et al (2010) \url{https://unpkg.com/node-red-contrib-evapotranspiration@1.0.1/alogorithms/evapotranspiration\%20ae45900.pdf}.
 }
 \examples{
 etr_penman_monteith(30, 150, 88, 5, 160, 5, 1000)

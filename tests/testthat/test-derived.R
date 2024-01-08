@@ -31,7 +31,7 @@ test_that("Bad type for sunset hour throws error.", {
 })
 
 test_that("Extraterrestrial radiation works as expected", {
-  expect_equal(calc_extraterrestrial_rad(0.2, pi, -0.4), -6.8777, tolerance = 1e-3)
+  expect_equal(calc_extraterrestrial_rad(2.10, 0.88, 0.39, 0.96), 40.55863, tolerance = 1e-3)
 })
 
 test_that("Bad type for extraterrestrial radiation throws error.", {

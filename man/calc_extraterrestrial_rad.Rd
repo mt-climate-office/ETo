@@ -4,7 +4,7 @@
 \alias{calc_extraterrestrial_rad}
 \title{Calculate the theoretical extraterrestrial radiation at a given latitude.}
 \usage{
-calc_extraterrestrial_rad(sunset_hour, lat, declination)
+calc_extraterrestrial_rad(sunset_hour, lat, declination, inverse_distance)
 }
 \arguments{
 \item{sunset_hour}{The sunset hour angle in radians. Can be calculated using \code{calc_sunset_hour_angle}}
@@ -12,6 +12,8 @@ calc_extraterrestrial_rad(sunset_hour, lat, declination)
 \item{lat}{The latitude in radians.}
 
 \item{declination}{The solar declination in radians. Can be calculated using \code{calc_solar_declination}}
+
+\item{inverse_distance}{The inverse relative distance between the earth and sun calculated with \code{calc_inverse_relative_distance}.}
 }
 \value{
 The extraterrestrial radiation in MJ m^-2 d^-1

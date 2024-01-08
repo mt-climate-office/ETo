@@ -55,18 +55,20 @@ calc_sunset_hour_angle <- function(lat, declination) {
 #' @param sunset_hour The sunset hour angle in radians. Can be calculated using `calc_sunset_hour_angle`
 #' @param lat The latitude in radians.
 #' @param declination The solar declination in radians. Can be calculated using `calc_solar_declination`
+#' @param inverse_distance The inverse relative distance between the earth and sun calculated with `calc_inverse_relative_distance`.
 #'
 #' @return The extraterrestrial radiation in MJ m^-2 d^-1
 #' @export
 #'
 #' @examples
 #' calc_extraterrestrial_rad(23, 0.5, 2.5)
-calc_extraterrestrial_rad <- function(sunset_hour, lat, declination) {
+calc_extraterrestrial_rad <- function(sunset_hour, lat, declination, inverse_distance) {
   checkmate::assert_multi_class(sunset_hour, c("numeric", "SpatRaster"))
   checkmate::assert_multi_class(lat, c("numeric", "SpatRaster"))
   checkmate::assert_multi_class(declination, c("numeric", "SpatRaster"))
+  checkmate::assert_multi_class(inverse_distance, c("numeric", "SpatRaster"))
 
-  ((24 * 60) / pi) * (0.0820 * (sunset_hour * sin(lat) * sin(declination) + cos(lat) * cos(declination) * sin(sunset_hour)))
+  ((24 * 60) / pi) * (0.0820 * inverse_distance * (sunset_hour * sin(lat) * sin(declination) + cos(lat) * cos(declination) * sin(sunset_hour)))
 }
 
 #' Calculate the clear sky radiation at a location given an elevation.
@@ -147,17 +149,29 @@ calc_radiation_fraction <- function(radiation, clear_sky) {
 #' @param temp The air temperature in degrees C.
 #' @param act_vapor_pressure The actual vapor pressure. Can be calculated with `calc_act_vapor_pressure`.
 #' @param radiation_fraction The fraction of radiation relative to clear sky. Can be calculated with `calc_radiation_fraction`.
+#' @param tmin The daily minimum temperature. Defaults to `NULL`. If specified with tmax, they are used in place of `temp`.
+#' @param tmax The daily maximum temperature. Defaults to `NULL`. If specified with tmin, they are used in place of `temp`.
 #'
 #' @return The outgoing longwave radiation in MJ m^-2 day^-1.
 #' @export
 #'
 #' @examples
 #' calc_longwave_radiation(5, 1.3, 0.5)
-calc_longwave_radiation <- function(temp, act_vapor_pressure, radiation_fraction) {
+calc_longwave_radiation <- function(temp, act_vapor_pressure, radiation_fraction, tmin = NULL, tmax = NULL) {
   checkmate::assert_multi_class(temp, c("numeric", "SpatRaster"))
   checkmate::assert_multi_class(act_vapor_pressure, c("numeric", "SpatRaster"))
   checkmate::assert_multi_class(radiation_fraction, c("numeric", "SpatRaster"))
-  4.903e-9 * ((temp + 273.16)^4) * (0.34 - (0.14 * (sqrt(act_vapor_pressure)))) * ((1.35 * (radiation_fraction)) - 0.35)
+  if (!is.null(tmin) & !is.null(tmax)) {
+    temp_term = mean(
+      c(
+        (tmax + 273.16)^4,
+        (tmin + 273.16)^4
+      )
+    )
+  } else {
+    temp_term = (temp + 273.16)^4
+  }
+  4.903e-9 * temp_term * (0.34 - (0.14 * (sqrt(act_vapor_pressure)))) * ((1.35 * (radiation_fraction)) - 0.35)
 }
 
 #' Calculate the outgoing shortwave radiation.
