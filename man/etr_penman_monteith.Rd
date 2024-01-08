@@ -8,15 +8,15 @@ in Zotarelli et al (2010) \url{https://unpkg.com/node-red-contrib-evapotranspira
 etr_penman_monteith(
   lat,
   days,
-  rh = NULL,
-  rhmin = NULL,
-  rhmax = NULL,
-  tmean = NULL,
-  tmin = NULL,
-  tmax = NULL,
   srad,
   ws,
   elev,
+  rh_mean = NULL,
+  rh_min = NULL,
+  rh_max = NULL,
+  t_mean = NULL,
+  t_min = NULL,
+  t_max = NULL,
   reference = 0.23,
   wind_height = 2
 )
@@ -24,7 +24,7 @@ etr_penman_monteith(
 \arguments{
 \item{lat}{Latitude of ETo calculation in degrees.}
 
-\item{rh}{Relative humidity (\%).}
+\item{days}{The julian day ETo is being calculated on.}
 
 \item{srad}{Shortwave radiation in W m^-2.}
 
@@ -32,13 +32,21 @@ etr_penman_monteith(
 
 \item{elev}{Elevation in meters.}
 
+\item{rh_mean}{Relative humidity (\%).}
+
+\item{rh_min}{Minumum daily relative humidity (\%).}
+
+\item{rh_max}{Maximum daily relative humidity (\%).}
+
+\item{t_mean}{Air temperature in Celsius.}
+
+\item{t_min}{Minimum daily air temperature in degC.}
+
+\item{t_max}{Maximum daily air temperature in degC.}
+
 \item{reference}{The albedo of the reference surface (defaults to 0.23 for grass).}
 
 \item{wind_height}{The height of the wind observation in meters. (defaults to 2). If it is not 2 meters, the wind speed will be corrected to a 2 meter observation.}
-
-\item{day}{The julian day ETo is being calculated on.}
-
-\item{temp}{Air temperature in Celsius.}
 }
 \value{
 Reference ET in mm per day.
@@ -48,5 +56,19 @@ Calculate daily total reference ET at a given point. Follows the steps outlined
 in Zotarelli et al (2010) \url{https://unpkg.com/node-red-contrib-evapotranspiration@1.0.1/alogorithms/evapotranspiration\%20ae45900.pdf}.
 }
 \examples{
-etr_penman_monteith(30, 150, 88, 5, 160, 5, 1000)
+etr_penman_monteith(
+     t_mean = NULL,
+     t_max = 21.5,
+     t_min = 12.3,
+     rh_mean = NULL,
+     rh_max = 84,
+     rh_min = 63,
+     lat = 50.8,
+     days = 187,
+     ws = 2.77778,
+     wind_height = 10,
+     elev = 100,
+     reference = 0.23,
+     srad = 255.4398
+)
 }

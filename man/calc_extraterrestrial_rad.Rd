@@ -22,5 +22,5 @@ The extraterrestrial radiation in MJ m^-2 d^-1
 Calculate the theoretical extraterrestrial radiation at a given latitude.
 }
 \examples{
-calc_extraterrestrial_rad(23, 0.5, 2.5)
+calc_extraterrestrial_rad(23, 0.5, 2.5, 0.96)
 }

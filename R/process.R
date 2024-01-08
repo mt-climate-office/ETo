@@ -69,6 +69,8 @@ get_elev_from_raster <- function(r, z, verbose = FALSE) {
 #' @param t_max A multilayer timeseries `terra::rast` of min daily temperature in degrees C.
 #' @param srad A multilayer timeseries `terra::rast` of daily solar radiation in W m^-2.
 #' @param rh A multilayer timeseries `terra::rast` of mean daily relative humidity (%).
+#' @param rh_min A multilayer timeseries `terra::rast` of minimum daily relative humidity (%; defaults to NULL).
+#' @param rh_max A multilayer timeseries `terra::rast` of maximum daily relative humidity (%).
 #' @param ws A multilayer timeseries `terra::rast` of mean daily wind speed at 2m height in m s^-1.
 #' @param elev A `terra::rast` of elevation in meters. If left blank, elevation will
 #' be derived using the `elevatr` package.

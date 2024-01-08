@@ -61,7 +61,7 @@ calc_sunset_hour_angle <- function(lat, declination) {
 #' @export
 #'
 #' @examples
-#' calc_extraterrestrial_rad(23, 0.5, 2.5)
+#' calc_extraterrestrial_rad(23, 0.5, 2.5, 0.96)
 calc_extraterrestrial_rad <- function(sunset_hour, lat, declination, inverse_distance) {
   checkmate::assert_multi_class(sunset_hour, c("numeric", "SpatRaster"))
   checkmate::assert_multi_class(lat, c("numeric", "SpatRaster"))

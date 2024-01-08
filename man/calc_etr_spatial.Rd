@@ -5,11 +5,13 @@
 \title{Calculate a timeseries of ETo across a set of input rasters.}
 \usage{
 calc_etr_spatial(
-  tmean,
-  tmin = NULL,
-  tmax = NULL,
+  t_mean = NULL,
+  t_min = NULL,
+  t_max = NULL,
   srad = NULL,
   rh = NULL,
+  rh_min = NULL,
+  rh_max = NULL,
   ws = NULL,
   elev = NULL,
   days = NULL,
@@ -19,15 +21,19 @@ calc_etr_spatial(
 )
 }
 \arguments{
-\item{tmean}{A multilayer timeseries \code{terra::rast} of mean daily temperature in degrees C.}
+\item{t_mean}{A multilayer timeseries \code{terra::rast} of mean daily temperature in degrees C.}
 
-\item{tmin}{A multilayer timeseries \code{terra::rast} of max daily temperature in degrees C.}
+\item{t_min}{A multilayer timeseries \code{terra::rast} of max daily temperature in degrees C.}
 
-\item{tmax}{A multilayer timeseries \code{terra::rast} of min daily temperature in degrees C.}
+\item{t_max}{A multilayer timeseries \code{terra::rast} of min daily temperature in degrees C.}
 
 \item{srad}{A multilayer timeseries \code{terra::rast} of daily solar radiation in W m^-2.}
 
 \item{rh}{A multilayer timeseries \code{terra::rast} of mean daily relative humidity (\%).}
+
+\item{rh_min}{A multilayer timeseries \code{terra::rast} of minimum daily relative humidity (\%; defaults to NULL).}
+
+\item{rh_max}{A multilayer timeseries \code{terra::rast} of maximum daily relative humidity (\%).}
 
 \item{ws}{A multilayer timeseries \code{terra::rast} of mean daily wind speed at 2m height in m s^-1.}
 
@@ -35,7 +41,7 @@ calc_etr_spatial(
 be derived using the \code{elevatr} package.}
 
 \item{days}{A multilayer timeseries \code{terra::rast} where each day is a constant value
-of the Julian day. If left blank, it is assumed the \code{tmean} input has a time
+of the Julian day. If left blank, it is assumed the \code{t_mean} input has a time
 attribute and the raster will be derived using \code{terra::time}.}
 
 \item{reference}{The albedo of the reference surface ranging from 0 - 1.
@@ -53,31 +59,31 @@ A \code{terra::rast} timeseries of ETo for the input domain.
 \description{
 Assumes that all inputs share the same resolution, extent, projection. Also assumes that
 rasters have the number of layers with each layer corresponding to a day.
-For hargreaves, only tmean, tmin and tmax are required arguments. For PM,
-tmean, srad, rh, and ws must all be supplied.
+For hargreaves, only t_mean, t_min and t_max are required arguments. For PM,
+t_mean, srad, rh, and ws must all be supplied.
 }
 \examples{
 \dontrun{
 # Load data. Need to read with terra::rast to unpack to a raster.
 srad <- terra::rast(srad) |> terra::subset(1:10)
-tmean <- terra::rast(tmean) |> terra::subset(1:10)
+t_mean <- terra::rast(t_mean) |> terra::subset(1:10)
 # Convert from K to C
-tmean <- tmean - 273.15
-tmax <- terra::rast(tmax) |> terra::subset(1:10)
+t_mean <- t_mean - 273.15
+t_max <- terra::rast(t_max) |> terra::subset(1:10)
 # Convert from K to C
-tmax <- tmax - 273.15
-tmin <- terra::rast(tmin) |> terra::subset(1:10)
+t_max <- t_max - 273.15
+t_min <- terra::rast(t_min) |> terra::subset(1:10)
 # Convert from K to C
-tmin <- tmin - 273.15
+t_min <- t_min - 273.15
 rh <- terra::rast(rh) |> terra::subset(1:10)
 ws <- terra::rast(ws) |> terra::subset(1:10)
 
 penman <- calc_etr_spatial(
-  tmean = tmean, srad = srad, rh = rh, ws = ws,
+  t_mean = t_mean, srad = srad, rh = rh, ws = ws,
   method = "penman", reference = 0.23, z = 3
 )
 hargreaves <- calc_etr_spatial(
-  tmean = tmean, tmax = tmax, tmin = tmin, method = "hargreaves", z = 3
+  t_mean = t_mean, t_max = t_max, t_min = t_min, method = "hargreaves", z = 3
 )
 }
 }

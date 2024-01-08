@@ -2,9 +2,13 @@
 #' in Zotarelli et al (2010) [https://unpkg.com/node-red-contrib-evapotranspiration@1.0.1/alogorithms/evapotranspiration%20ae45900.pdf](https://unpkg.com/node-red-contrib-evapotranspiration@1.0.1/alogorithms/evapotranspiration%20ae45900.pdf).
 #'
 #' @param lat Latitude of ETo calculation in degrees.
-#' @param day The julian day ETo is being calculated on.
+#' @param days The julian day ETo is being calculated on.
 #' @param rh_mean Relative humidity (%).
+#' @param rh_min Minumum daily relative humidity (%).
+#' @param rh_max Maximum daily relative humidity (%).
 #' @param t_mean Air temperature in Celsius.
+#' @param t_min Minimum daily air temperature in degC.
+#' @param t_max Maximum daily air temperature in degC.
 #' @param srad Shortwave radiation in W m^-2.
 #' @param ws Wind speed at 2 meters in M s^-1.
 #' @param elev Elevation in meters.
@@ -15,7 +19,21 @@
 #' @export
 #'
 #' @examples
-#' etr_penman_monteith(30, 150, 88, 5, 160, 5, 1000)
+#' etr_penman_monteith(
+#'      t_mean = NULL,
+#'      t_max = 21.5,
+#'      t_min = 12.3,
+#'      rh_mean = NULL,
+#'      rh_max = 84,
+#'      rh_min = 63,
+#'      lat = 50.8,
+#'      days = 187,
+#'      ws = 2.77778,
+#'      wind_height = 10,
+#'      elev = 100,
+#'      reference = 0.23,
+#'      srad = 255.4398
+#' )
 etr_penman_monteith <- function(
     lat, days, srad, ws, elev, rh_mean = NULL, rh_min = NULL, rh_max = NULL, t_mean = NULL, t_min = NULL, t_max = NULL, reference = 0.23, wind_height=2
 ) {

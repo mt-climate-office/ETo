@@ -4,7 +4,7 @@
 #' @param tmax The maximum air temperature in deg C.
 #' @param tmean The average air temperature in deg C.
 #' @param lat The latitude of the measurements degrees.
-#' @param day The julian day of the measurement. Can either be an integer or date object.
+#' @param days The julian day of the measurement. Can either be an integer or date object.
 #' @param srad Downwelling shortwave radiaiton in W m^-2. Defaults to NULL. If
 #' left as null, srad will be estimated using latitude and julian day.
 #'
