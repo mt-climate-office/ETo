@@ -169,7 +169,7 @@ etr_penman_monteith <- function(
   # Step 19: Calculate net radiation
   rad_net <- calc_net_radiation(rad_sw, rad_lw)
 
-  # Final Step: Calcualte ETo
+  # Final Step: Calculate ETo
   ((0.408 * svp_slope * (rad_net - 0)) + (psy * (900 / (t_mean + 273)) * (ws * (sat_vapor_pressure - actual_vapor_pressure)))) /
     (svp_slope + psy * (1 + 0.34 * ws))
 }
