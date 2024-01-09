@@ -18,7 +18,8 @@ Imports:
     checkmate,
     elevatr,
     sf,
-    terra
+    terra,
+    progress
 Depends: 
     R (>= 2.10)
 LazyData: true
