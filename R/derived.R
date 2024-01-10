@@ -188,7 +188,7 @@ calc_shortwave_radiation <- function(radiation, reference = 0.23) {
   checkmate::assert_multi_class(radiation, c("numeric", "SpatRaster"))
   checkmate::assert_multi_class(reference, c("numeric", "SpatRaster"))
 
-  (1 - 0.23) * radiation
+  (1 - reference) * radiation
 }
 
 #' Calculate the net outgoing radiation.
