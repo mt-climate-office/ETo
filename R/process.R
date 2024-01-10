@@ -132,15 +132,15 @@ calc_etr_spatial <-
     checkmate::assert_choice(method, c("penman", "hargreaves"))
 
     if (is.null(elev)) {
-      elev <- get_elev_from_raster(t_mean[[1]], z = z)
+      elev <- get_elev_from_raster(srad[[1]], z = z)
     }
 
     if (is.null(days)) {
-      days <- terra::time(t_mean) |>
+      days <- terra::time(srad) |>
         lapply(function(x) {
           jday <- format(x, "%j") |>
             as.numeric()
-          temp <- terra::deepcopy(t_mean[[1]])
+          temp <- terra::deepcopy(srad[[1]])
           temp[] <- jday
           terra::time(temp) <- x
           temp
@@ -148,10 +148,10 @@ calc_etr_spatial <-
         terra::rast()
     }
 
-    lat <- terra::deepcopy(t_mean[[1]])
+    lat <- terra::deepcopy(srad[[1]])
     lat[] <- terra::xyFromCell(lat, 1:terra::ncell(lat))[, 2]
 
-    ref <- terra::deepcopy(t_mean[[1]])
+    ref <- terra::deepcopy(srad[[1]])
     ref[] <- reference
 
     if (method == "penman") {
