@@ -17,6 +17,7 @@ calc_etr_spatial(
   days = NULL,
   reference = 0.23,
   z = 9,
+  wind_height = 2,
   method = "penman"
 )
 }
@@ -50,6 +51,9 @@ Defaults to 0.23 for grass.}
 \item{z}{The zoom level download elevation data at ranging from 1 - 14.
 One if coarser resolution, 14 is finer resolution. For more information,
 look at \code{?elevatr::get_elev_raster}}
+
+\item{wind_height}{The height of the wind observation in meters. (defaults to 2).
+If it is not 2 meters, the wind speed will be corrected to a 2 meter observation.}
 
 \item{method}{The method to calculate ETo. Can either be "penman" or "hargreaves".}
 }

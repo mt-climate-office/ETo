@@ -82,6 +82,8 @@ get_elev_from_raster <- function(r, z, verbose = FALSE) {
 #' @param z The zoom level download elevation data at ranging from 1 - 14.
 #' One if coarser resolution, 14 is finer resolution. For more information,
 #' look at `?elevatr::get_elev_raster`
+#' @param wind_height The height of the wind observation in meters. (defaults to 2).
+#' If it is not 2 meters, the wind speed will be corrected to a 2 meter observation.
 #' @param method The method to calculate ETo. Can either be "penman" or "hargreaves".
 #'
 #' @return A `terra::rast` timeseries of ETo for the input domain.
@@ -111,61 +113,83 @@ get_elev_from_raster <- function(r, z, verbose = FALSE) {
 #'   t_mean = t_mean, t_max = t_max, t_min = t_min, method = "hargreaves", z = 3
 #' )
 #' }
-calc_etr_spatial <- function(
-    t_mean = NULL, t_min = NULL, t_max = NULL, srad = NULL, rh = NULL,
-    rh_min = NULL, rh_max = NULL, ws = NULL, elev = NULL,
-    days = NULL, reference = 0.23, z = 9, method = "penman"
-) {
-  checkmate::assert_choice(method, c("penman", "hargreaves"))
+calc_etr_spatial <-
+  function(
+      t_mean = NULL,
+      t_min = NULL,
+      t_max = NULL,
+      srad = NULL,
+      rh = NULL,
+      rh_min = NULL,
+      rh_max = NULL,
+      ws = NULL,
+      elev = NULL,
+      days = NULL,
+      reference = 0.23,
+      z = 9,
+      wind_height = 2,
+      method = "penman") {
+    checkmate::assert_choice(method, c("penman", "hargreaves"))
 
-  if (is.null(elev)) {
-    elev <- get_elev_from_raster(t_mean[[1]], z = z)
+    if (is.null(elev)) {
+      elev <- get_elev_from_raster(t_mean[[1]], z = z)
+    }
+
+    if (is.null(days)) {
+      days <- terra::time(t_mean) |>
+        lapply(function(x) {
+          jday <- format(x, "%j") |>
+            as.numeric()
+          temp <- terra::deepcopy(t_mean[[1]])
+          temp[] <- jday
+          terra::time(temp) <- x
+          temp
+        }) |>
+        terra::rast()
+    }
+
+    lat <- terra::deepcopy(t_mean[[1]])
+    lat[] <- terra::xyFromCell(lat, 1:terra::ncell(lat))[, 2]
+
+    ref <- terra::deepcopy(t_mean[[1]])
+    ref[] <- reference
+
+    if (method == "penman") {
+      checkmate::assert_multi_class(t_mean, c("SpatRaster", "NULL"))
+      checkmate::assert_multi_class(t_min, c("SpatRaster", "NULL"))
+      checkmate::assert_multi_class(t_max, c("SpatRaster", "NULL"))
+      checkmate::assert_class(srad, "SpatRaster")
+      checkmate::assert_multi_class(rh, c("SpatRaster", "NULL"))
+      checkmate::assert_multi_class(rh_min, c("SpatRaster", "NULL"))
+      checkmate::assert_multi_class(rh_max, c("SpatRaster", "NULL"))
+      checkmate::assert_class(ws, "SpatRaster")
+
+      # dataset <- terra::sds(lat, days, rh, t_mean, srad, ws, elev, ref)
+
+      ETo <- etr_penman_monteith(
+        lat = lat,
+        days = days,
+        rh_mean = rh,
+        rh_min = rh_min,
+        rh_max = rh_max,
+        t_mean = t_mean,
+        t_min = t_min,
+        t_max = t_max,
+        srad = srad,
+        ws = ws,
+        elev = elev,
+        reference = reference,
+        wind_height = wind_height
+      )
+      #     # v_etr <- Vectorize(etr_penman_monteith)
+      #     ETo <- terra::lapp(x = dataset, etr_penman_monteith, usenames = TRUE)
+    } else {
+      # dataset <- terra::sds(t_min, t_max, t_mean, lat, days)
+      # v_hg <- Vectorize(etr_hargreaves)
+      # ETo <- terra::lapp(dataset, v_hg)
+      ETo <- etr_hargreaves(t_min, t_max, t_mean, lat, days)
+    }
+
+    terra::time(ETo) <- terra::time(days)
+    return(ETo)
   }
-
-  if (is.null(days)) {
-    days <- terra::time(t_mean) |>
-      lapply(function(x) {
-        jday <- format(x, "%j") |>
-          as.numeric()
-        temp <- terra::deepcopy(t_mean[[1]])
-        temp[] <- jday
-        terra::time(temp) <- x
-        temp
-      }) |>
-      terra::rast()
-  }
-
-  lat <- terra::deepcopy(t_mean[[1]])
-  lat[] <- terra::xyFromCell(lat, 1:terra::ncell(lat))[, 2]
-
-  ref <- terra::deepcopy(t_mean[[1]])
-  ref[] <- reference
-
-  if (method == "penman") {
-    checkmate::assert_multi_class(t_mean, c("SpatRaster", "NULL"))
-    checkmate::assert_multi_class(t_min,  c("SpatRaster", "NULL"))
-    checkmate::assert_multi_class(t_max,  c("SpatRaster", "NULL"))
-    checkmate::assert_class(srad, "SpatRaster")
-    checkmate::assert_multi_class(rh,  c("SpatRaster", "NULL"))
-    checkmate::assert_multi_class(rh_min,  c("SpatRaster", "NULL"))
-    checkmate::assert_multi_class(rh_max,  c("SpatRaster", "NULL"))
-    checkmate::assert_class(ws, "SpatRaster")
-
-    # dataset <- terra::sds(lat, days, rh, t_mean, srad, ws, elev, ref)
-
-    ETo <- etr_penman_monteith(
-      lat = lat, days = days, rh_mean = rh, rh_min = rh_min, rh_max = rh_max,
-      t_mean = t_mean, t_min = t_min, t_max = t_max, srad = srad, ws = ws, elev = elev, reference = reference
-    )
-#     # v_etr <- Vectorize(etr_penman_monteith)
-#     ETo <- terra::lapp(x = dataset, etr_penman_monteith, usenames = TRUE)
-  } else {
-    # dataset <- terra::sds(t_min, t_max, t_mean, lat, days)
-    # v_hg <- Vectorize(etr_hargreaves)
-    # ETo <- terra::lapp(dataset, v_hg)
-    ETo <- etr_hargreaves(t_min, t_max, t_mean, lat, days)
-  }
-
-  terra::time(ETo) <- terra::time(days)
-  return(ETo)
-}

@@ -57,18 +57,18 @@ in Zotarelli et al (2010) \url{https://unpkg.com/node-red-contrib-evapotranspira
 }
 \examples{
 etr_penman_monteith(
-     t_mean = NULL,
-     t_max = 21.5,
-     t_min = 12.3,
-     rh_mean = NULL,
-     rh_max = 84,
-     rh_min = 63,
-     lat = 50.8,
-     days = 187,
-     ws = 2.77778,
-     wind_height = 10,
-     elev = 100,
-     reference = 0.23,
-     srad = 255.4398
+  t_mean = NULL,
+  t_max = 21.5,
+  t_min = 12.3,
+  rh_mean = NULL,
+  rh_max = 84,
+  rh_min = 63,
+  lat = 50.8,
+  days = 187,
+  ws = 2.77778,
+  wind_height = 10,
+  elev = 100,
+  reference = 0.23,
+  srad = 255.4398
 )
 }

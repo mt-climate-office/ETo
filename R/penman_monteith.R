@@ -20,23 +20,22 @@
 #'
 #' @examples
 #' etr_penman_monteith(
-#'      t_mean = NULL,
-#'      t_max = 21.5,
-#'      t_min = 12.3,
-#'      rh_mean = NULL,
-#'      rh_max = 84,
-#'      rh_min = 63,
-#'      lat = 50.8,
-#'      days = 187,
-#'      ws = 2.77778,
-#'      wind_height = 10,
-#'      elev = 100,
-#'      reference = 0.23,
-#'      srad = 255.4398
+#'   t_mean = NULL,
+#'   t_max = 21.5,
+#'   t_min = 12.3,
+#'   rh_mean = NULL,
+#'   rh_max = 84,
+#'   rh_min = 63,
+#'   lat = 50.8,
+#'   days = 187,
+#'   ws = 2.77778,
+#'   wind_height = 10,
+#'   elev = 100,
+#'   reference = 0.23,
+#'   srad = 255.4398
 #' )
 etr_penman_monteith <- function(
-    lat, days, srad, ws, elev, rh_mean = NULL, rh_min = NULL, rh_max = NULL, t_mean = NULL, t_min = NULL, t_max = NULL, reference = 0.23, wind_height=2
-) {
+    lat, days, srad, ws, elev, rh_mean = NULL, rh_min = NULL, rh_max = NULL, t_mean = NULL, t_min = NULL, t_max = NULL, reference = 0.23, wind_height = 2) {
   # checkmate::assert_multi_class(
   #   c(lat, days, rh_mean, t_mean, srad, ws, elev, reference),
   #   c("numeric", "SpatRaster")
@@ -115,18 +114,17 @@ etr_penman_monteith <- function(
   # Step 11: Calculate actual vapor pressure.
   # Should be 1.409 in FAO example.
   if (!is.null(rh_min) & !is.null(rh_max)) {
-
     # Use all min/max values.
     if (!is.null(t_min) & !is.null(t_max)) {
       actual_vapor_pressure <- mean(c(
         calc_act_vapor_pressure(sat_vp_tmin, rh_max),
         calc_act_vapor_pressure(sat_vp_tmax, rh_min)
       ))
-    # Use daily mean rh_mean and temperature.
+      # Use daily mean rh_mean and temperature.
     } else {
       actual_vapor_pressure <- calc_act_vapor_pressure(sat_vapor_pressure, rh_mean)
     }
-  # If you don't have daily min/max rh_mean.
+    # If you don't have daily min/max rh_mean.
   } else {
     if (!is.null(t_min) & !is.null(t_max)) {
       actual_vapor_pressure <- calc_act_vapor_pressure(
@@ -173,4 +171,3 @@ etr_penman_monteith <- function(
   ((0.408 * svp_slope * (rad_net - 0)) + (psy * (900 / (t_mean + 273)) * (ws * (sat_vapor_pressure - actual_vapor_pressure)))) /
     (svp_slope + psy * (1 + 0.34 * ws))
 }
-
