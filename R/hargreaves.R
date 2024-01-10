@@ -34,11 +34,7 @@ etr_hargreaves <- function(tmin, tmax, tmean, lat, days, srad = NULL) {
   }
   eto = 0.0023 * (tmean + 17.8) * (tmax - tmin)**0.5 * 0.408 * srad
 
-  if (inherits(eto, "SpatRaster")) {
-    eto = terra::clamp(eto, lower=0, upper=Inf)
-  } else {
-    eto = max(c(eto, 0))
-  }
+  eto[eto < 0] <- 0
 
   return(eto)
 }
