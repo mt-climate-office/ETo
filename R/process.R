@@ -49,7 +49,8 @@ get_elev_from_raster <- function(r, z, verbose = FALSE) {
   checkmate::assert_class(r, "SpatRaster")
   checkmate::assert_number(z)
 
-  terra::boundaries(r) |>
+  r |>
+    terra::rast() |>
     terra::as.polygons() |>
     sf::st_as_sf() |>
     elevatr::get_elev_raster(z = z, verbose = verbose) |>
@@ -131,16 +132,21 @@ calc_etr_spatial <-
       method = "penman") {
     checkmate::assert_choice(method, c("penman", "hargreaves"))
 
+    if(!is.null(srad)){
+      model <- srad
+    }else{
+      model <- t_mean
+    }
     if (is.null(elev)) {
-      elev <- get_elev_from_raster(srad[[1]], z = z)
+        elev <- get_elev_from_raster(model[[1]], z = z)
     }
 
     if (is.null(days)) {
-      days <- terra::time(srad) |>
+      days <- terra::time(model) |>
         lapply(function(x) {
           jday <- format(x, "%j") |>
             as.numeric()
-          temp <- terra::deepcopy(srad[[1]])
+          temp <- terra::deepcopy(model[[1]])
           temp[] <- jday
           terra::time(temp) <- x
           temp
@@ -148,13 +154,14 @@ calc_etr_spatial <-
         terra::rast()
     }
 
-    lat <- terra::deepcopy(srad[[1]])
+    lat <- terra::deepcopy(model[[1]])
     lat[] <- terra::xyFromCell(lat, 1:terra::ncell(lat))[, 2]
 
-    ref <- terra::deepcopy(srad[[1]])
-    ref[] <- reference
-
     if (method == "penman") {
+
+      ref <- terra::deepcopy(model[[1]])
+      ref[] <- reference
+
       checkmate::assert_multi_class(t_mean, c("SpatRaster", "NULL"))
       checkmate::assert_multi_class(t_min, c("SpatRaster", "NULL"))
       checkmate::assert_multi_class(t_max, c("SpatRaster", "NULL"))
@@ -187,7 +194,7 @@ calc_etr_spatial <-
       # dataset <- terra::sds(t_min, t_max, t_mean, lat, days)
       # v_hg <- Vectorize(etr_hargreaves)
       # ETo <- terra::lapp(dataset, v_hg)
-      ETo <- etr_hargreaves(t_min, t_max, t_mean, lat, days)
+      ETo <- etr_hargreaves(tmin = t_min, tmax = t_max, tmean = t_mean, lat = lat, days = days)
     }
 
     terra::time(ETo) <- terra::time(days)

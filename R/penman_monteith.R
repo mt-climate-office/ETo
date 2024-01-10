@@ -62,7 +62,7 @@ etr_penman_monteith <- function(
     }
 
     # Step 1: Calculate Mean Daily Temperature
-    t_mean <- mean(c(t_min, t_max))
+    t_mean <- (t_min + t_max)/2
   }
 
   if (!is.null(rh_min) | !is.null(rh_max)) {
@@ -72,7 +72,7 @@ etr_penman_monteith <- function(
     if (!is.null(rh_mean)) {
       warning("Because rh_min and rh_max are both included, rh_mean will be ignored.")
     }
-    rh_mean <- mean(c(rh_min, rh_max))
+    rh_mean <- (rh_min + rh_max)/2
   }
 
   # Step 2: Mean Daily Solar Radiation
@@ -106,7 +106,7 @@ etr_penman_monteith <- function(
   if (!is.null(t_min) & !is.null(t_max)) {
     sat_vp_tmin <- calc_sat_vapor_pressure(t_min)
     sat_vp_tmax <- calc_sat_vapor_pressure(t_max)
-    sat_vapor_pressure <- mean(c(sat_vp_tmin, sat_vp_tmax))
+    sat_vapor_pressure <- (sat_vp_tmin + sat_vp_tmax) / 2
   } else {
     sat_vapor_pressure <- calc_sat_vapor_pressure(t_mean)
   }
@@ -116,10 +116,10 @@ etr_penman_monteith <- function(
   if (!is.null(rh_min) & !is.null(rh_max)) {
     # Use all min/max values.
     if (!is.null(t_min) & !is.null(t_max)) {
-      actual_vapor_pressure <- mean(c(
-        calc_act_vapor_pressure(sat_vp_tmin, rh_max),
+      actual_vapor_pressure <- (
+        calc_act_vapor_pressure(sat_vp_tmin, rh_max) +
         calc_act_vapor_pressure(sat_vp_tmax, rh_min)
-      ))
+      ) / 2
       # Use daily mean rh_mean and temperature.
     } else {
       actual_vapor_pressure <- calc_act_vapor_pressure(sat_vapor_pressure, rh_mean)
@@ -128,7 +128,7 @@ etr_penman_monteith <- function(
   } else {
     if (!is.null(t_min) & !is.null(t_max)) {
       actual_vapor_pressure <- calc_act_vapor_pressure(
-        mean(c(sat_vp_tmin, sat_vp_tmax)), rh_mean
+        (sat_vp_tmin + sat_vp_tmax) / 2, rh_mean
       )
     } else {
       actual_vapor_pressure <- calc_act_vapor_pressure(sat_vapor_pressure, rh_mean)

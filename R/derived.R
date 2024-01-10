@@ -162,12 +162,12 @@ calc_longwave_radiation <- function(temp, act_vapor_pressure, radiation_fraction
   checkmate::assert_multi_class(act_vapor_pressure, c("numeric", "SpatRaster"))
   checkmate::assert_multi_class(radiation_fraction, c("numeric", "SpatRaster"))
   if (!is.null(tmin) & !is.null(tmax)) {
-    temp_term <- mean(
-      c(
-        (tmax + 273.16)^4,
-        (tmin + 273.16)^4
-      )
-    )
+    temp_term <-
+      (
+        ((tmax + 273.16)^4) +
+        ((tmin + 273.16)^4)
+      ) /2
+
   } else {
     temp_term <- (temp + 273.16)^4
   }
