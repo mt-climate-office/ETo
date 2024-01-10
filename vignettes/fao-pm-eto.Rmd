@@ -1,5 +1,5 @@
 ---
-title: "fao-pm-eto"
+title: "Calculating Daily Penman-Monteith Reference ET"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{fao-pm-eto}
@@ -14,19 +14,82 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
+```{r setup, echo=FALSE}
 library(ETo)
 ```
-t_mean = NULL
-t_max = 21.5
-t_min = 12.3
-rh_mean = NULL
-rh_max = 84
-rh_min = 63
-lat = 50.8
-days = 187
-ws = 2.77778
-wind_height = 10
-elev = 100
-reference = 0.23
-srad = 255.4398
+
+
+This is a step-by-step example of how reference evapotranspiration (ET<sub>o</sub>)is calculated in the `ETo` package following the [FAO](https://www.fao.org/3/X0490E/x0490e08.htm#chapter%204%20%20%20determination%20of%20eto)[^1] guidelines and the steps outlined in [Zotarelli et al (2010)](https://unpkg.com/node-red-contrib-evapotranspiration@1.0.1/alogorithms/evapotranspiration%20ae45900.pdf)[^2]. 
+
+# ET<sub>o</sub> Definition
+Reference evapotranspiration (ET<sub>o</sub>) is defined as the potential water lost to evaporation and plant transpiration from a reference surface:
+
+> The reference surface is a hypothetical grass reference crop with an assumed crop height of 0.12 m, a fixed surface resistance of 70 s m<sup>-1</sup> and an albedo of 0.23. The reference surface closely resembles an extensive surface of green, well-watered grass of uniform height, actively growing and completely shading the ground. The fixed surface resistance of 70 s m<sup>-1</sup> implies a moderately dry soil surface resulting from about a weekly irrigation frequency.[^1] 
+
+To calculate ET<sub>o</sub>, we use the Food and Agriculture Organization's [Penman-Monteith ET<sub>o</sub> algorithm](https://www.fao.org/3/x0490e/x0490e08.htm). This method allows ET<sub>o</sub> to be calculated with using daily meteorological observations. With this method, daily ET<sub>o</sub> is calculated as:
+
+$$
+ET_o = \frac{0.408 \Delta (R_n - G) + \gamma \frac{900}{T + 273} u_2 (e_s - e_a)}{\Delta + \gamma (1 + 0.34 u_2)}
+$$
+
+where:
+
+- $ET_o$ is the reference surface evapotranspiration (mm/day)
+- $R_n$ is the net radiation at the crop surface (MJ/m<sup>2</sup>/day)
+- $G$ is soil heat flux (MJ/m<sup>2</sup>/day)
+- $T$ is the average temperature (°C)
+- $u_2$ is the wind speed at 2 meters height (m/s)
+- $e_s$ is the saturation vapor pressure (kPa)
+- $e_a$ is the actual vapor pressure (kPa)
+- $\Delta$ is the slope of the vapor pressure curve (kPa/°C)
+- $\gamma$ is the psychrometric constant (kPa/°C)
+
+# Calculation of Daily ET<sub>o</sub>
+
+The steps to derive all the intermediate variables necessary to calculate ET<sub>o</sub> are outlined in the following sections. The following input data is used in all of the examples:
+
+```{r data, echo=FALSE}
+tibble::tibble(
+  variable = c("Maximum Air Temperature (T<sub>max</sub>)", "Minimum air temperature (T<sub>min</sub>)","Maximum relative humidity (RH<sub>max</sub>)", "Minimum relative humidity (RH<sub>min</sub>)", "Average 10 meter wind speed (u<sub>2</sub>)", "Average incoming shortwave radiation (R<sub>s</sub>)", "Elevation (z)", "Latitude"),
+  value = c("21.5 [°C]", "12.3 [°C]", "84 [%]", "63 [%]", "2.7778 [m/s]", "255.4398 [W m<sup>-2</sup>]", "100 [m]", "50.8 [degrees]")
+) |>
+  knitr::kable(col.names = NULL, caption = "Example meteorological data as measured on 6 July in Uccle (Brussels, Belgium)[^1].")
+```
+## Step 1: Calculate Daily Average Temperature
+The daily average temperature is derived from T<sub>min</sub> and T<sub>max</sub>:
+
+$$
+T_{mean} = \frac{T_{max} + T_{min}}{2}
+$$
+Plugging in the numbers from our example, we get:
+
+$$
+T_{mean} =  \frac{21.5 + 12.3}{2} = 16.9°C
+$$
+
+## Step 2: Convert Solar Radiation to Units of *MJ m<sup>-2</sup> day<sup>-1</sup>*
+
+One watt per square meter is equal to one joule per meter squared per second. Therefore, we convert daily incoming shortwave radiation by multiplying it by the number of seconds in a day (3600 * 24), then converting from joules to megajoules (multiply by `1e-6`):
+$$
+R_s [MJ m^{-2} day^{-1}] = R_s [W m^{2}] * 3600 * 24 * 1e-6
+$$
+Using our example, we get:
+$$
+R_s [MJ m^{-2} day^{-1}] = 255.4398 * 3600 * 24 * 1e-6 = `r  round(255.4398 * 3600 * 24 * 1e-6, 3)` [MJ m^{-2} day^{-1}]
+$$
+
+## Step 3: Adjust Wind Speed Based on Height of Observation
+The Penman-Monteith requires wind speed measured at 2 meters above the ground surface for ET<sub>o</sub> calculation. Because wind speeds measured from taller heights tend to be larger than 2-meter wind speeds, we need to adjust the observations using the following equation: 
+
+$$
+u_2 = u_2 * \frac{4.87}{log(67.8 * observation\_height - 5.42)}
+$$
+Using our example: 
+$$
+u_2 = 2.7778 * \frac{4.87}{log(67.8 * 10 - 5.42)} = `r adjust_wind_speed(2.7778, 10) |> round(4)`
+$$
+`ETo` provides the `adjust_wind_speed` function, which does this calculation for the user. 
+
+[^1]: [https://www.fao.org/3/X0490E/x0490e05.htm](https://www.fao.org/3/X0490E/x0490e05.htm)
+[^2]: [https://unpkg.com/node-red-contrib-evapotranspiration@1.0.1/alogorithms/evapotranspiration%20ae45900.pdf](https://unpkg.com/node-red-contrib-evapotranspiration@1.0.1/alogorithms/evapotranspiration%20ae45900.pdf)
+

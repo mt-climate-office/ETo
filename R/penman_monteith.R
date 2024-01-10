@@ -83,7 +83,7 @@ etr_penman_monteith <- function(
   # Adjust wind speed if observation is not at 2m above surface.
   # Should correct to 2.078 in the FAO ETo example.
   if (wind_height != 2) {
-    ws <- ws * (4.87 / log(67.8 * wind_height - 5.42))
+    ws <- adjust_wind_speed(ws, wind_height)
   }
 
   # Step 4: Slope of saturation vapor pressure curve.
