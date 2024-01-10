@@ -168,6 +168,13 @@ etr_penman_monteith <- function(
   rad_net <- calc_net_radiation(rad_sw, rad_lw)
 
   # Final Step: Calculate ETo
-  ((0.408 * svp_slope * (rad_net - 0)) + (psy * (900 / (t_mean + 273)) * (ws * (sat_vapor_pressure - actual_vapor_pressure)))) /
+  eto = ((0.408 * svp_slope * (rad_net - 0)) + (psy * (900 / (t_mean + 273)) * (ws * (sat_vapor_pressure - actual_vapor_pressure)))) /
     (svp_slope + psy * (1 + 0.34 * ws))
+
+  if (inherits(eto, "SpatRaster")) {
+    eto = terra::clamp(eto, lower=0, upper=Inf)
+  } else {
+    eto = max(c(eto, 0))
+  }
+  return(eto)
 }
