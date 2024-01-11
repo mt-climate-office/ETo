@@ -41,6 +41,7 @@
 <li class="active nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
+    <a class="dropdown-item" href="../articles/cmip6-eto.html">cmip6-eto</a>
     <a class="dropdown-item" href="../articles/fao-pm-eto.html">Calculating Daily Penman-Monteith Reference ET</a>
   </div>
 </li>
@@ -74,7 +75,11 @@
 (ET<sub>o</sub>)is calculated in the <code>ETo</code> package following
 the <a href="https://www.fao.org/3/X0490E/x0490e08.htm#chapter%204%20%20%20determination%20of%20eto" class="external-link">FAO</a><a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;&lt;a href="https://www.fao.org/3/X0490E/x0490e05.htm" class="external-link"&gt;https://www.fao.org/3/X0490E/x0490e05.htm&lt;/a&gt;&lt;/p&gt;'><sup>1</sup></a> guidelines
 and the steps outlined in <a href="https://unpkg.com/node-red-contrib-evapotranspiration@1.0.1/alogorithms/evapotranspiration%20ae45900.pdf" class="external-link">Zotarelli
-et al (2010)</a><a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;&lt;a href="https://unpkg.com/node-red-contrib-evapotranspiration@1.0.1/alogorithms/evapotranspiration%20ae45900.pdf" class="external-link"&gt;https://unpkg.com/node-red-contrib-evapotranspiration@1.0.1/alogorithms/evapotranspiration%20ae45900.pdf&lt;/a&gt;&lt;/p&gt;'><sup>2</sup></a>.</p>
+et al (2010)</a><a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;&lt;a href="https://unpkg.com/node-red-contrib-evapotranspiration@1.0.1/alogorithms/evapotranspiration%20ae45900.pdf" class="external-link"&gt;Zotarelli,
+Lincoln, Michael D Dukes, Consuelo C Romero, Kati W Migliaccio, and
+Kelly T Morgan. 2010. “Step by Step Calculation of the Penman-Monteith
+Evapotranspiration (FAO-56 Method).” Institute of Food and Agricultural
+Sciences. University of Florida 8.&lt;/a&gt;&lt;/p&gt;'><sup>2</sup></a>.</p>
 <div class="section level2">
 <h2 id="eto-definition">ET<sub>o</sub> Definition<a class="anchor" aria-label="anchor" href="#eto-definition"></a>
 </h2>
@@ -204,22 +209,337 @@ R_s [MJ m^{-2} day^{-1}] = R_s [W m^{2}] * 3600 * 24 * 1e-6
 \]</span> Using our example, we get: <span class="math display">\[
 R_s [MJ m^{-2} day^{-1}] = 255.4398 * 3600 * 24 * 1e-6 = 22.07 [MJ
 m^{-2} day^{-1}]
-\]</span></p>
+\]</span> <code>ETo</code> provides the <code><a href="../reference/wm2_to_mj.html">wm2_to_mj()</a></code>
+function, which does this calculation for the user.</p>
 </div>
 <div class="section level3">
 <h3 id="step-3-adjust-wind-speed-based-on-height-of-observation">Step 3: Adjust Wind Speed Based on Height of Observation<a class="anchor" aria-label="anchor" href="#step-3-adjust-wind-speed-based-on-height-of-observation"></a>
 </h3>
-<p>The Penman-Monteith requires wind speed measured at 2 meters above
-the ground surface for ET<sub>o</sub> calculation. Because wind speeds
-measured from taller heights tend to be larger than 2-meter wind speeds,
-we need to adjust the observations using the following equation:</p>
+<p>The Penman-Monteith method requires wind speed measured at 2 meters
+above the ground surface for ET<sub>o</sub> calculation. Because wind
+speeds measured from taller heights tend to be larger than 2-meter wind
+speeds, we need to adjust the observations using the following
+equation:</p>
 <p><span class="math display">\[
 u_2 = u_2 * \frac{4.87}{log(67.8 * observation\_height - 5.42)}
 \]</span> Using our example: <span class="math display">\[
 u_2 = 2.7778 * \frac{4.87}{log(67.8 * 10 - 5.42)} = 2.0777
-\]</span> <code>ETo</code> provides the <code>adjust_wind_speed</code>
+\]</span> <code>ETo</code> provides the <code><a href="../reference/adjust_wind_speed.html">adjust_wind_speed()</a></code>
 function, which does this calculation for the user.</p>
 </div>
+<div class="section level3">
+<h3 id="step-4-calculate-the-slope-of-the-saturation-vapor-pressure-curve-delta">Step 4: Calculate the Slope of the Saturation Vapor Pressure Curve
+(<span class="math inline">\(\Delta\)</span>)<a class="anchor" aria-label="anchor" href="#step-4-calculate-the-slope-of-the-saturation-vapor-pressure-curve-delta"></a>
+</h3>
+<p>The saturation vapor pressure of the air changes with temperature.
+The slope of this relationship represents how effectively moisture can
+be wicked from the plant or soil surface into the air. This in turn
+affects the rate of ET<sub>o</sub>. <span class="math inline">\(\Delta\)</span> is defined as follows:</p>
+<p><span class="math display">\[
+\Delta = \frac{4098 * [0.6108 * exp(\frac{17.27 * T_{mean}}{T_{mean} +
+237.3})]}{(T_{mean} + 237.3)^2}
+\]</span> Using our example, we get: <span class="math display">\[
+\Delta = \frac{4098 * [0.6108 * exp(\frac{17.27 * 16.9}{16.9 +
+237.3})]}{(16.9 + 237.3)^2} = 0.122
+\]</span> <code>ETo</code> provides the <code><a href="../reference/calc_svp_slope.html">calc_svp_slope()</a></code>
+function, which does the calculation for the user.</p>
+</div>
+<div class="section level3">
+<h3 id="step-5-calculate-atmospheric-pressure-p">Step 5: Calculate Atmospheric Pressure (<span class="math inline">\(P\)</span>)<a class="anchor" aria-label="anchor" href="#step-5-calculate-atmospheric-pressure-p"></a>
+</h3>
+<p>Atmospheric pressure has an effect on how much ET can occur. At lower
+pressures ET increases slightly, due to less force being exerted on the
+earth’s surface<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;&lt;a href="https://unpkg.com/node-red-contrib-evapotranspiration@1.0.1/alogorithms/evapotranspiration%20ae45900.pdf" class="external-link"&gt;Zotarelli,
+Lincoln, Michael D Dukes, Consuelo C Romero, Kati W Migliaccio, and
+Kelly T Morgan. 2010. “Step by Step Calculation of the Penman-Monteith
+Evapotranspiration (FAO-56 Method).” Institute of Food and Agricultural
+Sciences. University of Florida 8.&lt;/a&gt;&lt;/p&gt;'><sup>5</sup></a>. In the absence of measured pressure data,
+it can be estimated using elevation:</p>
+<p><span class="math display">\[
+P = 101.3 * [\frac{293 - 0.0065*z}{293}]^5.26
+\]</span> Using our example, we get: <span class="math display">\[
+P = 101.3 * [\frac{293 - 0.0065*100}{293}]^5.26 = 100.124
+\]</span> <code>ETo</code> provides the <code><a href="../reference/calc_pressure.html">calc_pressure()</a></code>
+function, which does the calculation for the user.</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="step-6-calculate-the-psychrometric-constant-gamma">Step 6: Calculate the Psychrometric Constant (<span class="math inline">\(\gamma\)</span>)<a class="anchor" aria-label="anchor" href="#step-6-calculate-the-psychrometric-constant-gamma"></a>
+</h2>
+<p>Zotarelli et al (2010) explain <span class="math inline">\(\gamma\)</span> as relating “the partial pressure
+of water in air to the air temperature so that vapor pressure can be
+estimated using paired dry and wet thermometer bulb temperature
+readings. Another way to describe the psychrometric constant is the
+ratio of specific heat of moist air at constant pressure to latent heat
+of vaporization. It is calculated as:</p>
+<p><span class="math display">\[
+\gamma = \frac{C_p*P}{\epsilon * \lambda} = 0.000665 * P
+\]</span> where:</p>
+<ul>
+<li>
+<span class="math inline">\(\gamma\)</span> is the psychrometric
+constant, kPa °C<sup>-1</sup>.</li>
+<li>
+<span class="math inline">\(C_p\)</span> is the specific heat at a
+constant pressure, 1.013 10<sup>-3</sup>, MJ kg<sup>-1</sup>
+°C<sup>-1</sup>.</li>
+<li>
+<span class="math inline">\(P\)</span> is the atmospheric pressure,
+kPa.</li>
+<li>
+<span class="math inline">\(\epsilon\)</span> is the ratio of the
+molecular weight of water vapor to dry air, 0.622.</li>
+<li>
+<span class="math inline">\(\lambda\)</span> is the latent heat of
+vaporization, 2.45, MJ kg<sup>-1</sup>
+</li>
+</ul>
+<p>Using our example:</p>
+<p><span class="math display">\[
+\gamma = \frac{C_p*100.1235083}{\epsilon * \lambda} = 0.067
+\]</span> <code>ETo</code> provides the
+<code><a href="../reference/calc_psychrometric_constant.html">calc_psychrometric_constant()</a></code> function, which does the
+calculation for the user.</p>
+<div class="section level3">
+<h3 id="steps-7-8-and-9-outlined-in-zotarelli-et-al-2010-are-skipped-here-as-they-are-all-just-sub-components-of-the-main-eto-equation-">Steps 7, 8 and 9 outlined in Zotarelli et al (2010) are skipped
+here, as they are all just sub-components of the main ET<sub>o</sub>
+equation.<a class="anchor" aria-label="anchor" href="#steps-7-8-and-9-outlined-in-zotarelli-et-al-2010-are-skipped-here-as-they-are-all-just-sub-components-of-the-main-eto-equation-"></a>
+</h3>
+</div>
+<div class="section level3">
+<h3 id="step-10-calculate-the-mean-saturation-vapor-pressure">Step 10: Calculate the Mean Saturation Vapor Pressure<a class="anchor" aria-label="anchor" href="#step-10-calculate-the-mean-saturation-vapor-pressure"></a>
+</h3>
+<p>As described in step 4, the saturation vapor pressure is related to
+the air temperature. For a given temperature, the saturation vapor
+pressure can be calculated as:</p>
+<p><span class="math display">\[
+e_{(t)} = 0.6108 * exp[\frac{17.27 * T}{T + 237.3}]
+\]</span></p>
+<p>Where:</p>
+<ul>
+<li>
+<span class="math inline">\(e_{(t)}\)</span> is the saturation vapor
+pressure for a given temperature (kPa).</li>
+<li>
+<span class="math inline">\(T\)</span> is the air temperature
+(°C).</li>
+</ul>
+<p>If daily minimum and maximum temperature are available, the daily
+average saturation vapor pressure should be calculated as the mean of
+the <span class="math inline">\(e_{(T_{min})}\)</span> and <span class="math inline">\(e_{(T_{max})}\)</span>. Otherwise, <span class="math inline">\(e_{(T_{avg})}\)</span> can be used. Using our
+example, this means <span class="math inline">\(e_s\)</span> is
+calculated as: <span class="math display">\[
+e_s = \frac{e_{(T_{min})} + e_{(T_{max})}}{2}
+\]</span> Using our example, we get: <span class="math display">\[
+e_s = \frac{1.431 + 2.564}{2} = 1.997
+\]</span> <code>ETo</code> provides the
+<code><a href="../reference/calc_sat_vapor_pressure.html">calc_sat_vapor_pressure()</a></code> function, which does the
+calculation for the user.</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="step-11-calculate-the-actual-vapor-pressure-e_a">Step 11: Calculate the Actual Vapor Pressure (<span class="math inline">\(e_a\)</span>)<a class="anchor" aria-label="anchor" href="#step-11-calculate-the-actual-vapor-pressure-e_a"></a>
+</h2>
+<p>The actual vapor pressure can be calculated using <span class="math inline">\(e_s\)</span> and daily <span class="math inline">\(RH_{min}\)</span> and <span class="math inline">\(RH_{max}\)</span> values: <span class="math display">\[
+e_a = \frac{e_{(T_{min})} * [\frac{RH_{max}}{100}] + e_{(T_{max})} *
+[\frac{RH_{min}}{100}]}{2}
+\]</span> In the absence of daily <span class="math inline">\(RH_{min}\)</span> and <span class="math inline">\(RH_{max}\)</span> observations, <span class="math inline">\(e_a\)</span> can be calculated using daily mean
+<span class="math inline">\(RH\)</span>: <span class="math display">\[
+e_a = \frac{RH_{mean}}{100} * e_s
+\]</span> Since we have both <span class="math inline">\(RH_{min}\)</span> and <span class="math inline">\(RH_{max}\)</span>, we can calculate <span class="math inline">\(e_a\)</span> as: <span class="math display">\[
+e_a = \frac{1.431 * 0.84 + 3 * 0.63}{2} = 1.409
+\]</span> <code>ETo</code> provides the
+<code><a href="../reference/calc_act_vapor_pressure.html">calc_act_vapor_pressure()</a></code> function, which does the
+calculation for the user.</p>
+<div class="section level3">
+<h3 id="step-12-calculate-the-inverse-relative-earth-sun-distance-and-the-solar-declination">Step 12: Calculate the Inverse Relative Earth-Sun Distance and the
+Solar Declination<a class="anchor" aria-label="anchor" href="#step-12-calculate-the-inverse-relative-earth-sun-distance-and-the-solar-declination"></a>
+</h3>
+<p>These variables, along with those calculated in the next few steps,
+are required to model the solar energy reaching earth’s atmosphere. The
+inverse relative distance between the earth and sun (<span class="math inline">\(d_r\)</span>) and the solar declination (the angle
+of the sun in the sky; <span class="math inline">\(\delta\)</span>) are
+given by: <span class="math display">\[
+d_r = 1 + 0.033 * cos[\frac{2 * \pi}{365} * J]
+\]</span> <span class="math display">\[
+\delta = 0.409 * sin[\frac{2*\pi}{365} * J - 1.39]
+\]</span> Where:</p>
+<ul>
+<li>J is the julian day (day of the year) ranging between 1 and 365 (366
+for leap years).</li>
+</ul>
+<p>Using our example, we calculate <span class="math inline">\(d_r\)</span> and <span class="math inline">\(\delta\)</span> as: <span class="math display">\[
+d_r = 1 + 0.033 * cos[\frac{2 * \pi}{365} * 187] = 0.967099
+\]</span> <span class="math display">\[
+\delta = 0.409 * sin[\frac{2*\pi}{365} * 187 - 1.39] = 0.3954358
+\]</span> <code>ETo</code> provides the
+<code><a href="../reference/calc_solar_declination.html">calc_solar_declination()</a></code> and
+<code><a href="../reference/calc_inverse_relative_distance.html">calc_inverse_relative_distance()</a></code> functions, which do the
+calculations for the user.</p>
+</div>
+<div class="section level3">
+<h3 id="step-13-convert-latitude-phi-from-decimal-degrees-to-radians">Step 13: Convert Latitude (<span class="math inline">\(\phi\)</span>) from Decimal Degrees to
+Radians<a class="anchor" aria-label="anchor" href="#step-13-convert-latitude-phi-from-decimal-degrees-to-radians"></a>
+</h3>
+<p>To be compatible with the variables we just created, the latitude
+must be in units of radians: <span class="math display">\[
+\phi [rad] = \frac{\pi}{180} * \phi [decimal\ degrees]
+\]</span> In our example, this gives us: <span class="math display">\[
+\phi [rad] = \frac{\pi}{180} * 50.8 = 0.887
+\]</span> <code>ETo</code> provides the <code><a href="../reference/lat_to_radians.html">lat_to_radians()</a></code>
+function, which does the calculation for the user.</p>
+</div>
+<div class="section level3">
+<h3 id="step-14-calculate-the-sunset-hour-angle-omega_s">Step 14: Calculate the Sunset Hour Angle (<span class="math inline">\(\omega_s\)</span>)<a class="anchor" aria-label="anchor" href="#step-14-calculate-the-sunset-hour-angle-omega_s"></a>
+</h3>
+<p>The sunset hour angle is calculated using the latitude and the
+declination: <span class="math display">\[
+\omega_s = arccos[-tan(\phi) * tan(\delta)]
+\]</span> In our example: <span class="math display">\[
+\omega_s = arccos[-tan(0.887) * tan(0.395)] = 2.108
+\]</span> <code>ETo</code> provides the
+<code><a href="../reference/calc_sunset_hour_angle.html">calc_sunset_hour_angle()</a></code> function, which does the
+calculation for the user.</p>
+</div>
+<div class="section level3">
+<h3 id="step-15-calculate-extraterrestrial-radiation-r_a">Step 15: Calculate Extraterrestrial Radiation (<span class="math inline">\(R_a\)</span>)<a class="anchor" aria-label="anchor" href="#step-15-calculate-extraterrestrial-radiation-r_a"></a>
+</h3>
+<p>The extraterrestrial radiation is the amount of radiation that hits
+the earth’s atmosphere and varies with the time of the year and
+latitude. It is calculated as: <span class="math display">\[
+R_a = \frac{24 * 60}{\pi}*G_{sc}*d_r*[(\omega_s * sin(\phi)*sin(\delta))
++ (cos(\phi) * cos(\delta) * sin(\omega_s))]
+\]</span> Where:</p>
+<ul>
+<li>
+<span class="math inline">\(R_a\)</span> is the extraterrestrial
+radiation (MJ M<sup>-2</sup> day<sup>-1</sup>)</li>
+<li>
+<span class="math inline">\(G_{sc}\)</span> is the solar constant of
+0.082 MJ M<sup>-2</sup> min<sup>-1</sup>
+</li>
+</ul>
+<p>Using our example, this gives: <span class="math display">\[
+\begin{multline}
+R_a = \\
+\frac{24 * 60}{\pi}*G_{sc}*0.967*[(2.108 * sin(0.887)*sin(0.395)) +
+(cos(0.887) * cos(0.395) * sin(2.108))] = \\
+41.088
+\end{multline}
+\]</span> <code>ETo</code> provides the
+<code><a href="../reference/calc_extraterrestrial_rad.html">calc_extraterrestrial_rad()</a></code> function, which does the
+calculation for the user.</p>
+</div>
+<div class="section level3">
+<h3 id="step-16-calculate-clear-sky-solar-radiation-r_so">Step 16: Calculate Clear Sky Solar Radiation (<span class="math inline">\(R_{so}\)</span>)<a class="anchor" aria-label="anchor" href="#step-16-calculate-clear-sky-solar-radiation-r_so"></a>
+</h3>
+<p>The extraterrestrial radiation calculated in the previous step can be
+scaled to radiation received at the Earth’s surface under a clear
+sky:</p>
+<p><span class="math display">\[
+R_{so} = (0.75 + 2e10^{-5}*z)*R_a
+\]</span> Where z is the elevation above sea level in meters. Using our
+example: <span class="math display">\[
+R_{so} = (0.75 + 2e10^{-5}*100)*41.088 = 30.898
+\]</span> <code>ETo</code> provides the
+<code><a href="../reference/calc_clear_sky_radiation.html">calc_clear_sky_radiation()</a></code> function, which does the
+calculation for the user.</p>
+</div>
+<div class="section level3">
+<h3 id="step-17-calculate-net-shortwave-solar-radiation-r_ns">Step 17: Calculate Net Shortwave Solar Radiation (<span class="math inline">\(R_{ns}\)</span>)<a class="anchor" aria-label="anchor" href="#step-17-calculate-net-shortwave-solar-radiation-r_ns"></a>
+</h3>
+<p>The net solar radiation is calculated using daily incoming shortwave
+radiation calculated in step 2: <span class="math display">\[
+R_{ns} = (1-\alpha)*R_s
+\]</span> Where:</p>
+<ul>
+<li>
+<span class="math inline">\(R_{ns}\)</span> is the net incoming
+shortwave radiation (MJ M<sup>-2</sup> day<sup>-1</sup>).</li>
+<li>
+<span class="math inline">\(\alpha\)</span> is the crop surface
+albedo. This defaults to 0.23, but can be adjusted with the
+<code>reference</code> argument.</li>
+<li>
+<span class="math inline">\(R_s\)</span> is the incoming shortwave
+solar radiation (MJ M<sup>-2</sup> day<sup>-1</sup>)</li>
+</ul>
+<p>In our example:</p>
+<p><span class="math display">\[
+R_{ns} = (1-0.23)*22.07
+\]</span></p>
+<p><code>ETo</code> provides the <code>calc_shortwave_raidation()</code>
+function, which does the calculation for the user.</p>
+</div>
+<div class="section level3">
+<h3 id="step-18-calculate-net-outgoing-longwave-solar-radiation-r_nl">Step 18: Calculate Net Outgoing Longwave Solar Radiation (<span class="math inline">\(R_{nl}\)</span>)<a class="anchor" aria-label="anchor" href="#step-18-calculate-net-outgoing-longwave-solar-radiation-r_nl"></a>
+</h3>
+<p>The Stefan-Boltzmann law states that radiation leaving earth’s
+surface is proportional to temperature raised to the fourth power. As
+such, we define <span class="math inline">\(R_{nl}\)</span> as follows:
+<span class="math display">\[
+R_{nl} = \sigma*[\frac{(T_{max}+273.16)^4 + (T_{min}+273.16)^4}{2}] *
+(0.34 - 0.14*\sqrt{e_a}) * (1.35 * \frac{R_s}{R_{so}}-0.35))
+\]</span> Where:</p>
+<ul>
+<li>
+<span class="math inline">\(R_{nl}\)</span> is the net outgoing
+longwave radiation (MJ M<sup>-2</sup> day<sup>-1</sup>).</li>
+<li>
+<span class="math inline">\(\sigma\)</span> is the Stefan-Boltzmann
+constant (4.903 * 10<sup>-9</sup>; MJ K<sup>-4</sup> M<sup>-2</sup>
+day<sup>-1</sup>)</li>
+</ul>
+<p>Using our example, we get:</p>
+<p><span class="math display">\[
+R_{nl} = \sigma*[\frac{(21.5+273.16)^4 + (12.3+273.16)^4}{2}] * (0.34 -
+0.14*\sqrt{1.409}) * (1.35 * \frac{16.994}{30.898}-0.35))
+\]</span> <span class="math display">\[
+= 3.712
+\]</span></p>
+<p>Note that if only <span class="math inline">\(T_{mean}\)</span>
+temperature data are available, <span class="math inline">\((T_{mean} +
+273.16)^4\)</span> can be used in place of the <span class="math inline">\(T_{min}\)</span> and <span class="math inline">\(T_{max}\)</span> in the bracketed portion of the
+equation. <code>ETo</code> provides the
+<code><a href="../reference/calc_longwave_radiation.html">calc_longwave_radiation()</a></code> function, which does the
+calculation for the user.</p>
+</div>
+<div class="section level3">
+<h3 id="step-19-calculate-net-radiation-r_n">Step 19: Calculate Net Radiation (<span class="math inline">\(R_n\)</span>)<a class="anchor" aria-label="anchor" href="#step-19-calculate-net-radiation-r_n"></a>
+</h3>
+<p>Net radiation is simply the difference betwen incoming shortwave
+radiation and outgoing longwave radiation:</p>
+<p><span class="math display">\[
+R_n = R_{ns} - R_{nl}
+\]</span> where <span class="math inline">\(R_n\)</span> has units of MJ
+M<sup>-2</sup> day<sup>-1</sup>. Using our example: <span class="math display">\[
+R_n = 16.994 - 3.712 = 13.282
+\]</span> <code>ETo</code> provides the
+<code><a href="../reference/calc_net_radiation.html">calc_net_radiation()</a></code> function, which does the calculation
+for the user.</p>
+</div>
+<div class="section level3">
+<h3 id="step-20-calculate-eto">Step 20: Calculate ET<sub>o</sub><a class="anchor" aria-label="anchor" href="#step-20-calculate-eto"></a>
+</h3>
+<p>Now we have all the components needed to calculate ET<sub>o</sub>.
+Recall that our equation for calculating ET<sub>o</sub> is <span class="math display">\[
+ET_o = \frac{0.408 \Delta (R_n - G) + \gamma \frac{900}{T + 273} u_2
+(e_s - e_a)}{\Delta + \gamma (1 + 0.34 u_2)}
+\]</span> We have not calculated the soil heat flux (<span class="math inline">\(G\)</span>), as it is assumed to be zero at a
+daily time step. Finally, plugging in the values from our example: <span class="math display">\[
+ET_o = \frac{0.408 * 0.122  * (13.282 - 0) + 0.067 * \frac{900}{16.9 +
+273} * 2.078 * (1.997 - 1.409)}{0.122 + 0.067 * (1 + 0.34 * 2.078)} =
+3.88
+\]</span> which gives <span class="math inline">\(ET_o\)</span> in
+millimeters. Luckily, you don’t have to do all of these steps if you
+want to calculate <span class="math inline">\(ET_o\)</span>!
+<code>ETo</code> provides the <code><a href="../reference/etr_penman_monteith.html">etr_penman_monteith()</a></code>
+function that does all of these calculations under the hood.</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+</h2>
 </div>
 
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
