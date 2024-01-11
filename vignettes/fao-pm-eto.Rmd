@@ -205,7 +205,7 @@ P = 101.3 * [\frac{293 - 0.0065*`r elev`}{293}]^5.26 = `r round(pressure, 3)`
 $$
 `ETo` provides the `calc_pressure()` function, which does the calculation for the user.
 
-# Step 6: Calculate the Psychrometric Constant ($\gamma$)
+## Step 6: Calculate the Psychrometric Constant ($\gamma$)
 Zotarelli et al (2010) explain $\gamma$ as relating "the partial pressure of water in air to the air temperature so that vapor pressure can be estimated using paired dry and wet thermometer bulb temperature readings. Another way to describe the psychrometric constant is the ratio of specific heat of moist air at constant pressure to latent heat of vaporization. It is calculated as:
 
 $$
@@ -250,7 +250,7 @@ e_s = \frac{`r round(sat_vp_tmin, 3)` + `r round(sat_vp_tmax, 3)`}{2} = `r round
 $$
 `ETo` provides the `calc_sat_vapor_pressure()` function, which does the calculation for the user.
 
-# Step 11: Calculate the Actual Vapor Pressure ($e_a$)
+## Step 11: Calculate the Actual Vapor Pressure ($e_a$)
 The actual vapor pressure can be calculated using $e_s$ and daily $RH_{min}$ and $RH_{max}$ values:
 $$
 e_a = \frac{e_{(T_{min})} * [\frac{RH_{max}}{100}] + e_{(T_{max})} * [\frac{RH_{min}}{100}]}{2}
