@@ -4,7 +4,7 @@ pkgdown_sha: ~
 articles:
   cmip6-eto: cmip6-eto.html
   fao-pm-eto: fao-pm-eto.html
-last_built: 2024-01-11T21:52Z
+last_built: 2024-01-11T22:01Z
 urls:
   reference: https://mt-climate-office.github.io/ETo/reference
   article: https://mt-climate-office.github.io/ETo/articles

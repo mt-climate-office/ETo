@@ -262,10 +262,9 @@ P = 101.3 * [\frac{293 - 0.0065*100}{293}]^5.26 = 100.124
 \]</span> <code>ETo</code> provides the <code><a href="../reference/calc_pressure.html">calc_pressure()</a></code>
 function, which does the calculation for the user.</p>
 </div>
-</div>
-<div class="section level2">
-<h2 id="step-6-calculate-the-psychrometric-constant-gamma">Step 6: Calculate the Psychrometric Constant (<span class="math inline">\(\gamma\)</span>)<a class="anchor" aria-label="anchor" href="#step-6-calculate-the-psychrometric-constant-gamma"></a>
-</h2>
+<div class="section level3">
+<h3 id="step-6-calculate-the-psychrometric-constant-gamma">Step 6: Calculate the Psychrometric Constant (<span class="math inline">\(\gamma\)</span>)<a class="anchor" aria-label="anchor" href="#step-6-calculate-the-psychrometric-constant-gamma"></a>
+</h3>
 <p>Zotarelli et al (2010) explain <span class="math inline">\(\gamma\)</span> as relating “the partial pressure
 of water in air to the air temperature so that vapor pressure can be
 estimated using paired dry and wet thermometer bulb temperature
@@ -300,6 +299,7 @@ vaporization, 2.45, MJ kg<sup>-1</sup>
 \]</span> <code>ETo</code> provides the
 <code><a href="../reference/calc_psychrometric_constant.html">calc_psychrometric_constant()</a></code> function, which does the
 calculation for the user.</p>
+</div>
 <div class="section level3">
 <h3 id="steps-7-8-and-9-outlined-in-zotarelli-et-al-2010-are-skipped-here-as-they-are-all-just-sub-components-of-the-main-eto-equation-">Steps 7, 8 and 9 outlined in Zotarelli et al (2010) are skipped
 here, as they are all just sub-components of the main ET<sub>o</sub>
@@ -336,10 +336,9 @@ e_s = \frac{1.431 + 2.564}{2} = 1.997
 <code><a href="../reference/calc_sat_vapor_pressure.html">calc_sat_vapor_pressure()</a></code> function, which does the
 calculation for the user.</p>
 </div>
-</div>
-<div class="section level2">
-<h2 id="step-11-calculate-the-actual-vapor-pressure-e_a">Step 11: Calculate the Actual Vapor Pressure (<span class="math inline">\(e_a\)</span>)<a class="anchor" aria-label="anchor" href="#step-11-calculate-the-actual-vapor-pressure-e_a"></a>
-</h2>
+<div class="section level3">
+<h3 id="step-11-calculate-the-actual-vapor-pressure-e_a">Step 11: Calculate the Actual Vapor Pressure (<span class="math inline">\(e_a\)</span>)<a class="anchor" aria-label="anchor" href="#step-11-calculate-the-actual-vapor-pressure-e_a"></a>
+</h3>
 <p>The actual vapor pressure can be calculated using <span class="math inline">\(e_s\)</span> and daily <span class="math inline">\(RH_{min}\)</span> and <span class="math inline">\(RH_{max}\)</span> values: <span class="math display">\[
 e_a = \frac{e_{(T_{min})} * [\frac{RH_{max}}{100}] + e_{(T_{max})} *
 [\frac{RH_{min}}{100}]}{2}
@@ -351,6 +350,7 @@ e_a = \frac{1.431 * 0.84 + 3 * 0.63}{2} = 1.409
 \]</span> <code>ETo</code> provides the
 <code><a href="../reference/calc_act_vapor_pressure.html">calc_act_vapor_pressure()</a></code> function, which does the
 calculation for the user.</p>
+</div>
 <div class="section level3">
 <h3 id="step-12-calculate-the-inverse-relative-earth-sun-distance-and-the-solar-declination">Step 12: Calculate the Inverse Relative Earth-Sun Distance and the
 Solar Declination<a class="anchor" aria-label="anchor" href="#step-12-calculate-the-inverse-relative-earth-sun-distance-and-the-solar-declination"></a>
