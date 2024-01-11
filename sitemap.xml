@@ -10,10 +10,10 @@
     <loc>https://mt-climate-office.github.io/ETo/LICENSE.html</loc>
   </url>
   <url>
-    <loc>https://mt-climate-office.github.io/ETo/articles/cmip6-eto.html</loc>
+    <loc>https://mt-climate-office.github.io/ETo/articles/ETo.html</loc>
   </url>
   <url>
-    <loc>https://mt-climate-office.github.io/ETo/articles/fao-pm-eto.html</loc>
+    <loc>https://mt-climate-office.github.io/ETo/articles/cmip6-eto.html</loc>
   </url>
   <url>
     <loc>https://mt-climate-office.github.io/ETo/articles/index.html</loc>
@@ -79,10 +79,16 @@
     <loc>https://mt-climate-office.github.io/ETo/reference/etr_penman_monteith.html</loc>
   </url>
   <url>
+    <loc>https://mt-climate-office.github.io/ETo/reference/get_days_from_raster.html</loc>
+  </url>
+  <url>
     <loc>https://mt-climate-office.github.io/ETo/reference/get_elev_from_point.html</loc>
   </url>
   <url>
     <loc>https://mt-climate-office.github.io/ETo/reference/get_elev_from_raster.html</loc>
+  </url>
+  <url>
+    <loc>https://mt-climate-office.github.io/ETo/reference/get_lat_from_raster.html</loc>
   </url>
   <url>
     <loc>https://mt-climate-office.github.io/ETo/reference/index.html</loc>

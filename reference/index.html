@@ -18,14 +18,16 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item">
+      <ul class="navbar-nav me-auto"><li class="nav-item">
+  <a class="nav-link" href="../articles/ETo.html">Get started</a>
+</li>
+<li class="active nav-item">
   <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/cmip6-eto.html">cmip6-eto</a>
-    <a class="dropdown-item" href="../articles/fao-pm-eto.html">Calculating Daily Penman-Monteith Reference ET</a>
+    <a class="dropdown-item" href="../articles/cmip6-eto.html">Using `ETo` on Raster Data</a>
   </div>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
@@ -145,6 +147,11 @@
 in Zotarelli et al (2010) <a href="https://unpkg.com/node-red-contrib-evapotranspiration@1.0.1/alogorithms/evapotranspiration%20ae45900.pdf" class="external-link">https://unpkg.com/node-red-contrib-evapotranspiration@1.0.1/alogorithms/evapotranspiration%20ae45900.pdf</a>.</dd>
       </dl><dl><dt>
           
+          <code><a href="get_days_from_raster.html">get_days_from_raster()</a></code> 
+        </dt>
+        <dd>Create a <code><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">terra::rast()</a></code> of julian days from a timeseries input.</dd>
+      </dl><dl><dt>
+          
           <code><a href="get_elev_from_point.html">get_elev_from_point()</a></code> 
         </dt>
         <dd>Get the elevation in meters for a given latitude and longitude.
@@ -155,6 +162,11 @@ Latitude/longitude must be in degrees with a geographic projection.</dd>
         </dt>
         <dd>Download a raster of elevation that matches the shape, resolution and
 projection of an input raster.</dd>
+      </dl><dl><dt>
+          
+          <code><a href="get_lat_from_raster.html">get_lat_from_raster()</a></code> 
+        </dt>
+        <dd>Create a latitude raster from an input raster template.</dd>
       </dl><dl><dt>
           
           <code><a href="lat_to_radians.html">lat_to_radians()</a></code> 

@@ -38,13 +38,15 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
 <li class="nav-item">
+  <a class="nav-link" href="articles/ETo.html">Get started</a>
+</li>
+<li class="nav-item">
   <a class="nav-link" href="reference/index.html">Reference</a>
 </li>
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="articles/cmip6-eto.html">cmip6-eto</a>
-    <a class="dropdown-item" href="articles/fao-pm-eto.html">Calculating Daily Penman-Monteith Reference ET</a>
+    <a class="dropdown-item" href="articles/cmip6-eto.html">Using `ETo` on Raster Data</a>
   </div>
 </li>
       </ul>
@@ -60,11 +62,11 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="eto-daily-reference-et-calculations-for-rasters">ETo: Daily Reference ET Calculations for Rasters<a class="anchor" aria-label="anchor" href="#eto-daily-reference-et-calculations-for-rasters"></a>
+<div class="page-header"><h1 id="eto-quick-and-easy-calculation-of-daily-reference-et">ETo: Quick and Easy Calculation of Daily Reference ET<a class="anchor" aria-label="anchor" href="#eto-quick-and-easy-calculation-of-daily-reference-et"></a>
 </h1></div>
 <!-- badges: start -->
 
-<p>ETo provides basic utility functions for calculating point-based and spatial daily reference ET. Currently, the Penman-Monteith and Hargreaves methods are implemented. Functions are also provided to calculate all necessary intermediate variables for calculating ETo. The only input variables needed to calculate ETo are daily average temperature, min temperature and max temperature (for Hargreaves), or daily average temperature, relative humidity, solar radiation and windspeed (for Penman-Monteith).</p>
+<p>ETo provides basic utility functions for calculating point-based and spatial daily reference ET. While there are many R packages that calculate reference ET (like <a href="https://cran.r-project.org/web/packages/Evapotranspiration/Evapotranspiration.pdf" class="external-link">Evapotranspiration</a> and <a href="https://cran.r-project.org/web/packages/bigleaf/bigleaf.pdf" class="external-link">bigleaf</a>), many only provide monthly ET models, and none that we have found support raster inputs out-of-the-box. <code>ETo</code> provides a simple interface for calculating daily reference ET and works with <code><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">terra::rast</a></code> data out-of-the-box. Currently, the Penman-Monteith (FAO-56 model) and Hargreaves methods are implemented. Functions are also provided to calculate all necessary intermediate variables for calculating ETo. The only input variables needed to calculate ETo are daily average temperature, min temperature and max temperature (for Hargreaves), or daily average temperature, relative humidity, solar radiation and windspeed (for Penman-Monteith).</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -76,44 +78,55 @@
 <div class="section level2">
 <h2 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
 </h2>
-<p>Below, the <a href="https://www.nccs.nasa.gov/services/data-collections/land-based-products/nex-gddp-cmip6" class="external-link">downscaled CMIP6</a> data for Montana that are provided with the package are used to calculate and compare different ETo methods:</p>
+<p>Here, reference ET is calculated using the example dataset given in the <a href="https://www.fao.org/3/X0490E/x0490e08.htm#chapter%204%20%20%20determination%20of%20eto" class="external-link">FAO-56 documentation</a>:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://mt-climate-office.github.io/ETo/">ETo</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Load data. Need to read with terra::rast to unpack to a raster.</span></span>
-<span><span class="va">srad</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="va">srad</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span></span>
-<span><span class="va">tmean</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="va">tmean</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span> </span>
-<span><span class="co"># Convert from K to C</span></span>
-<span><span class="va">tmean</span> <span class="op">&lt;-</span> <span class="va">tmean</span> <span class="op">-</span> <span class="fl">273.15</span></span>
-<span><span class="va">tmax</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="va">tmax</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span> </span>
-<span><span class="co"># Convert from K to C</span></span>
-<span><span class="va">tmax</span> <span class="op">&lt;-</span> <span class="va">tmax</span> <span class="op">-</span> <span class="fl">273.15</span></span>
-<span><span class="va">tmin</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="va">tmin</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span> </span>
-<span><span class="co"># Convert from K to C</span></span>
-<span><span class="va">tmin</span> <span class="op">&lt;-</span> <span class="va">tmin</span> <span class="op">-</span> <span class="fl">273.15</span></span>
-<span><span class="va">rh</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="va">rh</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span></span>
-<span><span class="va">ws</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="va">ws</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Get a raster grid of elevation for the domain.</span></span>
-<span><span class="va">elev</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/get_elev_from_raster.html">get_elev_from_raster</a></span><span class="op">(</span><span class="va">tmean</span>, z <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: [boundaries] boundary detection is only done for the first layer</span></span>
-<span></span>
-<span><span class="co"># Calculate timeseries of Penman Montieth</span></span>
-<span><span class="va">penman</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calc_etr_spatial.html">calc_etr_spatial</a></span><span class="op">(</span></span>
-<span> tmean <span class="op">=</span> <span class="va">tmean</span>, srad <span class="op">=</span> <span class="va">srad</span>, rh <span class="op">=</span> <span class="va">rh</span>, ws <span class="op">=</span> <span class="va">ws</span>,</span>
-<span> method <span class="op">=</span> <span class="st">"penman"</span>, reference <span class="op">=</span> <span class="fl">0.23</span>, elev <span class="op">=</span> <span class="va">elev</span></span>
+<span><span class="fu"><a href="reference/etr_penman_monteith.html">etr_penman_monteith</a></span><span class="op">(</span></span>
+<span>  t_max <span class="op">=</span> <span class="fl">21.5</span>, <span class="co"># Daily maximum temperature in degC</span></span>
+<span>  t_min <span class="op">=</span> <span class="fl">12.3</span>, <span class="co"># Daily minimum temperature in degC</span></span>
+<span>  rh_max <span class="op">=</span> <span class="fl">84</span>, <span class="co"># Daily maximum relative humidity (%)</span></span>
+<span>  rh_min <span class="op">=</span> <span class="fl">63</span>, <span class="co"># Daily minimum relative humidity (%)</span></span>
+<span>  srad <span class="op">=</span> <span class="fl">255.4398</span>, <span class="co"># The incoming shortwave radiation in W m^-2</span></span>
+<span>  ws <span class="op">=</span> <span class="fl">2.77778</span>, <span class="co"># Wind speed in meters/second</span></span>
+<span>  lat <span class="op">=</span> <span class="fl">50.8</span>, <span class="co"># Latitude of observation in decimal degrees</span></span>
+<span>  days <span class="op">=</span> <span class="fl">187</span>, <span class="co"># The day of the year</span></span>
+<span>  wind_height <span class="op">=</span> <span class="fl">10</span>, <span class="co"># The height in meters of the wind speed observation</span></span>
+<span>  elev <span class="op">=</span> <span class="fl">100</span>, <span class="co"># The elevation of the observations in meters.</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 3.88004</span></span></code></pre></div>
+<p>It also works with vectors:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/etr_penman_monteith.html">etr_penman_monteith</a></span><span class="op">(</span></span>
+<span>  t_max <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">21.5</span>, <span class="fl">23</span><span class="op">)</span>, <span class="co"># Daily maximum temperature in degC</span></span>
+<span>  t_min <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12.3</span>, <span class="fl">15</span><span class="op">)</span>, <span class="co"># Daily minimum temperature in degC</span></span>
+<span>  rh_max <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">84</span>, <span class="fl">80</span><span class="op">)</span>, <span class="co"># Daily maximum relative humidity (%)</span></span>
+<span>  rh_min <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">63</span>, <span class="fl">50</span><span class="op">)</span>, <span class="co"># Daily minimum relative humidity (%)</span></span>
+<span>  srad <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">255.4398</span>, <span class="fl">325</span><span class="op">)</span>, <span class="co"># The incoming shortwave radiation in W m^-2</span></span>
+<span>  ws <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2.77778</span>, <span class="fl">3</span><span class="op">)</span>, <span class="co"># Wind speed in meters/second</span></span>
+<span>  lat <span class="op">=</span> <span class="fl">50.8</span>, <span class="co"># Latitude of observation in decimal degrees</span></span>
+<span>  days <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">187</span>, <span class="fl">188</span><span class="op">)</span>, <span class="co"># The day of the year</span></span>
+<span>  wind_height <span class="op">=</span> <span class="fl">10</span>, <span class="co"># The height in meters of the wind speed observation</span></span>
+<span>  elev <span class="op">=</span> <span class="fl">100</span>, <span class="co"># The elevation of the observations in meters.</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 3.880040 5.120389</span></span></code></pre></div>
+<p>And it works with <code><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">terra::rast</a></code> rasters!</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/etr_penman_monteith.html">etr_penman_monteith</a></span><span class="op">(</span></span>
+<span>  t_max <span class="op">=</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">rast</a></span><span class="op">(</span>vals<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">21.5</span>, <span class="fl">23</span><span class="op">)</span>, nrows<span class="op">=</span><span class="fl">1</span>, ncols<span class="op">=</span><span class="fl">2</span><span class="op">)</span>, <span class="co"># Daily maximum temperature in degC</span></span>
+<span>  t_min <span class="op">=</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">rast</a></span><span class="op">(</span>vals<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12.3</span>, <span class="fl">15</span><span class="op">)</span>, nrows<span class="op">=</span><span class="fl">1</span>, ncols<span class="op">=</span><span class="fl">2</span><span class="op">)</span>, <span class="co"># Daily minimum temperature in degC</span></span>
+<span>  rh_max <span class="op">=</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">rast</a></span><span class="op">(</span>vals<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">84</span>, <span class="fl">80</span><span class="op">)</span>, nrows<span class="op">=</span><span class="fl">1</span>, ncols<span class="op">=</span><span class="fl">2</span><span class="op">)</span>, <span class="co"># Daily maximum relative humidity (%)</span></span>
+<span>  rh_min <span class="op">=</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">rast</a></span><span class="op">(</span>vals<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">63</span>, <span class="fl">50</span><span class="op">)</span>, nrows<span class="op">=</span><span class="fl">1</span>, ncols<span class="op">=</span><span class="fl">2</span><span class="op">)</span>, <span class="co"># Daily minimum relative humidity (%)</span></span>
+<span>  srad <span class="op">=</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">rast</a></span><span class="op">(</span>vals<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">255.4398</span>, <span class="fl">325</span><span class="op">)</span>, nrows<span class="op">=</span><span class="fl">1</span>, ncols<span class="op">=</span><span class="fl">2</span><span class="op">)</span>, <span class="co"># The incoming shortwave radiation in W m^-2</span></span>
+<span>  ws <span class="op">=</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">rast</a></span><span class="op">(</span>vals<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2.77778</span>, <span class="fl">3</span><span class="op">)</span>, nrows<span class="op">=</span><span class="fl">1</span>, ncols<span class="op">=</span><span class="fl">2</span><span class="op">)</span>, <span class="co"># Wind speed in meters/second</span></span>
+<span>  lat <span class="op">=</span> <span class="fl">50.8</span>, <span class="co"># Latitude of observation in decimal degrees</span></span>
+<span>  days <span class="op">=</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/rast.html" class="external-link">rast</a></span><span class="op">(</span>vals<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">187</span>, <span class="fl">188</span><span class="op">)</span>, nrows<span class="op">=</span><span class="fl">1</span>, ncols<span class="op">=</span><span class="fl">2</span><span class="op">)</span>, <span class="co"># The day of the year</span></span>
+<span>  wind_height <span class="op">=</span> <span class="fl">10</span>, <span class="co"># The height in meters of the wind speed observation</span></span>
+<span>  elev <span class="op">=</span> <span class="fl">100</span>, <span class="co"># The elevation of the observations in meters.</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Calculate timeseries of Hargreaves</span></span>
-<span><span class="va">hargreaves</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/calc_etr_spatial.html">calc_etr_spatial</a></span><span class="op">(</span></span>
-<span> tmean <span class="op">=</span> <span class="va">tmean</span>, tmax <span class="op">=</span> <span class="va">tmax</span>, tmin <span class="op">=</span> <span class="va">tmin</span>, method <span class="op">=</span> <span class="st">"hargreaves"</span>, elev <span class="op">=</span> <span class="va">elev</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">diff</span> <span class="op">&lt;-</span> <span class="va">penman</span> <span class="op">-</span> <span class="va">hargreaves</span></span>
-<span></span>
-<span><span class="co"># Plot the difference (in mm) between the two methods.</span></span>
-<span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">diff</span>, range <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">0.6</span>, <span class="fl">1.5</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-example-1.png" width="100%"></p>
+<span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/terra/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">r</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-example3-1.png" width="100%"></p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="license">
