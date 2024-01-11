@@ -1,5 +1,5 @@
 ---
-title: "cmip6-eto"
+title: "Using `ETo` on Raster Data"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{cmip6-eto}
@@ -13,23 +13,49 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 ```
-
+As shown in the `README`, `ETo` works with `terra::rast` objects out-of-the-box. In this example, the [downscaled CMIP6](https://www.nccs.nasa.gov/services/data-collections/land-based-products/nex-gddp-cmip6) data for Montana that are provided with the package are used to calculate and compare different ETo methods:
 ```{r setup}
 library(ETo)
 library(magrittr)
 
-# t_min = terra::rast("/home/cbrust/data/test/eto_test/tasmin_day_ACCESS-ESM1-5_historical_r1i1p1f1_gn_1950.nc") - 273.15
-# t_max = terra::rast("/home/cbrust/data/test/eto_test/tasmax_day_ACCESS-ESM1-5_historical_r1i1p1f1_gn_1950.nc") - 273.15
-# srad = terra::rast("/home/cbrust/data/test/eto_test/rsds_day_ACCESS-ESM1-5_historical_r1i1p1f1_gn_1950.nc")
-# rh = terra::rast("/home/cbrust/data/test/eto_test/hurs_day_ACCESS-ESM1-5_historical_r1i1p1f1_gn_1950_v1.1.nc") %>% 
-#   terra::clamp(lower=0, upper=100)
-# ws = terra::rast("/home/cbrust/data/test/eto_test//sfcWind_day_ACCESS-ESM1-5_historical_r1i1p1f1_gn_1950.nc")
-# 
-# eto = calc_etr_spatial(
-#   t_min = t_min, t_max = t_max, srad = srad, rh = rh, ws = ws, 
-#   wind_height=10, reference = 0.23
-# )
-# 
-# other_eto = terra::rast("/home/cbrust/data/test/eto_test//eto_day_ACCESS-ESM1-5_historical_r1i1p1f1_gn_1950_v1.1.nc" )
+# Load data. Need to read with terra::rast to unpack to a raster.
+srad <- terra::rast(srad) |> terra::subset(1:10)
+tmean <- terra::rast(tmean) |> terra::subset(1:10)
+# Convert from K to C
+tmean <- tmean - 273.15
+tmax <- terra::rast(tmax) |> terra::subset(1:10)
+# Convert from K to C
+tmax <- tmax - 273.15
+tmin <- terra::rast(tmin) |> terra::subset(1:10)
+# Convert from K to C
+tmin <- tmin - 273.15
+rh <- terra::rast(rh) |> terra::subset(1:10)
+ws <- terra::rast(ws) |> terra::subset(1:10)
+
+# Get a raster grid of elevation for the domain.
+elev <- get_elev_from_raster(tmean, z = 3)
+
+# Create a raster grid where each layer gives the julian day
+days <- get_days_from_raster(tmean)
+
+# Create a terra::rast of latitude
+lat <- get_lat_from_raster(tmean)
+
+# Calculate timeseries of Penman Montieth
+penman <- etr_penman_monteith(
+  t_mean = NULL, t_max = tmax, t_min = tmin, srad = srad, 
+  rh = rh, rh_min = NULL, rh_max = NULL, ws = ws,
+  days=days, lat=lat, reference = 0.23, elev = elev
+)
+
+# Calculate timeseries of Hargreaves
+hargreaves <- calc_etr_spatial(
+  t_mean = tmean, t_max = tmax, t_min = tmin, method = "hargreaves", elev = elev
+)
+
+diff <- penman - hargreaves
+
+# Plot the difference (in mm) between the two methods.
+terra::plot(diff, range = c(-0.6, 1.5))
 ```
 

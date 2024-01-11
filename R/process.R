@@ -58,6 +58,50 @@ get_elev_from_raster <- function(r, z, verbose = FALSE) {
     terra::project(r)
 }
 
+#' Create a `terra::rast()` of julian days from a timeseries input.
+#'
+#' @param r The timeseries `terra::rast()` used as an input.
+#'
+#' @return A `terra::rast()` that is of size `terra::nlyr(r)`, where each layer is a static value representing the julian day.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' r <- terra::rast(rh)
+#' get_days_from_raster(r)
+#' }
+get_days_from_raster <- function(r) {
+  terra::time(r) |>
+    lapply(function(x) {
+      jday <- format(x, "%j") |>
+        as.numeric()
+      temp <- terra::deepcopy(r[[1]])
+      temp[] <- jday
+      terra::time(temp) <- x
+      temp
+    }) |>
+    terra::rast()
+}
+
+#' Create a latitude raster from an input raster template.
+#'
+#' @param r The `terra::rast` to generate a latitude grid for.
+#'
+#' @return A single layer `terra::rast` where each pixel's value is the latitude.
+#' @export
+#'
+#' @examples
+#' @examples
+#' \dontrun{
+#' r <- terra::rast(rh)
+#' get_lat_from_raster(r)
+#' }
+get_lat_from_raster <- function(r) {
+  lat <- terra::deepcopy(r[[1]])
+  lat[] <- terra::xyFromCell(lat, 1:terra::ncell(lat))[, 2]
+  return(lat)
+}
+
 #' Calculate a timeseries of ETo across a set of input rasters.
 #'
 #' @description  Assumes that all inputs share the same resolution, extent, projection. Also assumes that
@@ -142,20 +186,10 @@ calc_etr_spatial <-
     }
 
     if (is.null(days)) {
-      days <- terra::time(model) |>
-        lapply(function(x) {
-          jday <- format(x, "%j") |>
-            as.numeric()
-          temp <- terra::deepcopy(model[[1]])
-          temp[] <- jday
-          terra::time(temp) <- x
-          temp
-        }) |>
-        terra::rast()
+      days <- get_days_from_raster(model)
     }
 
-    lat <- terra::deepcopy(model[[1]])
-    lat[] <- terra::xyFromCell(lat, 1:terra::ncell(lat))[, 2]
+    lat <- get_lat_from_raster(model)
 
     if (method == "penman") {
 

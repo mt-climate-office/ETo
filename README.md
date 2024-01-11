@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# ETo: Daily Reference ET Calculations for Rasters
+# ETo: Quick and Easy Calculation of Daily Reference ET
 
 <!-- badges: start -->
 
@@ -10,7 +10,15 @@
 <!-- badges: end -->
 
 ETo provides basic utility functions for calculating point-based and
-spatial daily reference ET. Currently, the Penman-Monteith and
+spatial daily reference ET. While there are many R packages that
+calculate reference ET (like
+[Evapotranspiration](https://cran.r-project.org/web/packages/Evapotranspiration/Evapotranspiration.pdf)
+and
+[bigleaf](https://cran.r-project.org/web/packages/bigleaf/bigleaf.pdf)),
+many only provide monthly ET models, and none that we have found support
+raster inputs out-of-the-box. `ETo` provides a simple interface for
+calculating daily reference ET and works with `terra::rast` data
+out-of-the-box. Currently, the Penman-Monteith (FAO-56 model) and
 Hargreaves methods are implemented. Functions are also provided to
 calculate all necessary intermediate variables for calculating ETo. The
 only input variables needed to calculate ETo are daily average
@@ -30,47 +38,63 @@ devtools::install_github("mt-climate-office/ETo")
 
 ## Example
 
-Below, the [downscaled
-CMIP6](https://www.nccs.nasa.gov/services/data-collections/land-based-products/nex-gddp-cmip6)
-data for Montana that are provided with the package are used to
-calculate and compare different ETo methods:
+Here, reference ET is calculated using the example dataset given in the
+[FAO-56
+documentation](https://www.fao.org/3/X0490E/x0490e08.htm#chapter%204%20%20%20determination%20of%20eto):
 
 ``` r
 library(ETo)
 
-# Load data. Need to read with terra::rast to unpack to a raster.
-srad <- terra::rast(srad) |> terra::subset(1:10)
-tmean <- terra::rast(tmean) |> terra::subset(1:10) 
-# Convert from K to C
-tmean <- tmean - 273.15
-tmax <- terra::rast(tmax) |> terra::subset(1:10) 
-# Convert from K to C
-tmax <- tmax - 273.15
-tmin <- terra::rast(tmin) |> terra::subset(1:10) 
-# Convert from K to C
-tmin <- tmin - 273.15
-rh <- terra::rast(rh) |> terra::subset(1:10)
-ws <- terra::rast(ws) |> terra::subset(1:10)
-
-# Get a raster grid of elevation for the domain.
-elev <- get_elev_from_raster(tmean, z = 3)
-#> Warning: [boundaries] boundary detection is only done for the first layer
-
-# Calculate timeseries of Penman Montieth
-penman <- calc_etr_spatial(
- tmean = tmean, srad = srad, rh = rh, ws = ws,
- method = "penman", reference = 0.23, elev = elev
+etr_penman_monteith(
+  t_max = 21.5, # Daily maximum temperature in degC
+  t_min = 12.3, # Daily minimum temperature in degC
+  rh_max = 84, # Daily maximum relative humidity (%)
+  rh_min = 63, # Daily minimum relative humidity (%)
+  srad = 255.4398, # The incoming shortwave radiation in W m^-2
+  ws = 2.77778, # Wind speed in meters/second
+  lat = 50.8, # Latitude of observation in decimal degrees
+  days = 187, # The day of the year
+  wind_height = 10, # The height in meters of the wind speed observation
+  elev = 100, # The elevation of the observations in meters.
 )
-
-# Calculate timeseries of Hargreaves
-hargreaves <- calc_etr_spatial(
- tmean = tmean, tmax = tmax, tmin = tmin, method = "hargreaves", elev = elev
-)
-
-diff <- penman - hargreaves
-
-# Plot the difference (in mm) between the two methods.
-terra::plot(diff, range = c(-0.6, 1.5))
+#> [1] 3.88004
 ```
 
-<img src="man/figures/README-example-1.png" width="100%" />
+It also works with vectors:
+
+``` r
+etr_penman_monteith(
+  t_max = c(21.5, 23), # Daily maximum temperature in degC
+  t_min = c(12.3, 15), # Daily minimum temperature in degC
+  rh_max = c(84, 80), # Daily maximum relative humidity (%)
+  rh_min = c(63, 50), # Daily minimum relative humidity (%)
+  srad = c(255.4398, 325), # The incoming shortwave radiation in W m^-2
+  ws = c(2.77778, 3), # Wind speed in meters/second
+  lat = 50.8, # Latitude of observation in decimal degrees
+  days = c(187, 188), # The day of the year
+  wind_height = 10, # The height in meters of the wind speed observation
+  elev = 100, # The elevation of the observations in meters.
+)
+#> [1] 3.880040 5.120389
+```
+
+And it works with `terra::rast` rasters!
+
+``` r
+r <- etr_penman_monteith(
+  t_max = terra::rast(vals=c(21.5, 23), nrows=1, ncols=2), # Daily maximum temperature in degC
+  t_min = terra::rast(vals=c(12.3, 15), nrows=1, ncols=2), # Daily minimum temperature in degC
+  rh_max = terra::rast(vals=c(84, 80), nrows=1, ncols=2), # Daily maximum relative humidity (%)
+  rh_min = terra::rast(vals=c(63, 50), nrows=1, ncols=2), # Daily minimum relative humidity (%)
+  srad = terra::rast(vals=c(255.4398, 325), nrows=1, ncols=2), # The incoming shortwave radiation in W m^-2
+  ws = terra::rast(vals=c(2.77778, 3), nrows=1, ncols=2), # Wind speed in meters/second
+  lat = 50.8, # Latitude of observation in decimal degrees
+  days = terra::rast(vals=c(187, 188), nrows=1, ncols=2), # The day of the year
+  wind_height = 10, # The height in meters of the wind speed observation
+  elev = 100, # The elevation of the observations in meters.
+)
+
+terra::plot(r)
+```
+
+<img src="man/figures/README-example3-1.png" width="100%" />

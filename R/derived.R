@@ -132,16 +132,12 @@ calc_radiation_fraction <- function(radiation, clear_sky) {
   checkmate::assert_multi_class(radiation, c("numeric", "SpatRaster"))
   checkmate::assert_multi_class(clear_sky, c("numeric", "SpatRaster"))
   frac <- radiation / clear_sky
-  if (inherits(frac, "SpatRaster")) {
-    frac[frac > 1] <- 1
-    return(frac)
-  } else {
-    if (frac > 1) {
-      return(1)
-    } else {
-      return(frac)
-    }
-  }
+  frac[frac > 1] <- 1
+
+  #When clear_sky is 0, set to 0.8 following FAO
+  frac[frac == Inf] = 0.8
+  return(frac)
+
 }
 
 #' Calculate the outgoing longwave radiation.
