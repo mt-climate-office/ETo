@@ -16,6 +16,95 @@ knitr::opts_chunk$set(
 
 ```{r setup, echo=FALSE}
 library(ETo)
+
+t_min = 12.3
+t_max = 21.5
+rh_max = 84
+rh_min = 63
+ws = 2.7778
+wind_height = 10
+srad = 255.4398
+elev = 100
+lat = 50.8
+days = 187
+reference = 0.23
+# Step 1: Calculate Mean Daily Temperature
+t_mean <- (t_min + t_max)/2
+
+# Step 2: Mean Daily Solar Radiation
+# Should be 22.07 in FAO daily ETo example.
+rad_in <- wm2_to_mj(srad) # 22.07
+
+# Step 3: Wind Speed.
+# Adjust wind speed if observation is not at 2m above surface.
+# Should correct to 2.078 in the FAO ETo example.
+if (wind_height != 2) {
+  ws <- adjust_wind_speed(ws, wind_height)
+}
+
+# Step 4: Slope of saturation vapor pressure curve.
+# Should be 0.122 in the FAO ETo example.
+svp_slope <- calc_svp_slope(t_mean)
+
+# Step 5: Calculate atmospheric pressure.
+# Should be 100.1 in the FAO ETo example.
+pressure <- calc_pressure(elev)
+
+# Step 6: Calculate psychrometric constant
+# Should be 0.0666 in the FAO ETo example.
+psy <- calc_psychrometric_constant(pressure)
+
+# Steps 7, 8 and 9 are not included here, as they are just subsets of the
+# final ETo equation.
+
+# Step 10: Calculate saturation vapor pressure.
+# Should be 1.997 with FAO example.
+sat_vp_tmin <- calc_sat_vapor_pressure(t_min)
+sat_vp_tmax <- calc_sat_vapor_pressure(t_max)
+sat_vapor_pressure <- (sat_vp_tmin + sat_vp_tmax) / 2
+
+# Step 11: Actual vapor pressure
+actual_vapor_pressure <- (
+  calc_act_vapor_pressure(sat_vp_tmin, rh_max) +
+  calc_act_vapor_pressure(sat_vp_tmax, rh_min)
+) / 2
+
+
+# Step 12: Calculate inverse relative Earth-Sun distance and solar declination.
+declination <- calc_solar_declination(days)
+inverse_distance <- calc_inverse_relative_distance(days)
+
+# Step 13: Convert latitude from degrees to radians.
+lat <- lat_to_radians(lat)
+
+# Step 14: Sunset hour angle.
+sunset_hour_angle <- calc_sunset_hour_angle(lat, declination)
+# Step 15: Extraterrestrial radiation
+# Should be 41.09 in the FAO ETo example.
+extraterrestrial_rad <- calc_extraterrestrial_rad(
+  sunset_hour_angle, lat, declination, inverse_distance
+)
+
+# Step 16: Clear sky solar radiation
+# Should be 30.90 in the FAO ETo example.
+clear_sky_radiation <- calc_clear_sky_radiation(elev, extraterrestrial_rad) # 30.90
+
+# Step 17: Net shortwave radiation
+# Should be 17.0 in the FAO ETo example.
+rad_sw <- calc_shortwave_radiation(rad_in, reference)
+
+# Step 18: Net outgoing long wave radiation
+# Should be 0.71 in the FAO ETo example.
+radiation_fraction <- calc_radiation_fraction(rad_in, clear_sky_radiation)
+# Should be 3.71 in the FAO ETo example.
+rad_lw <- calc_longwave_radiation(t_mean, actual_vapor_pressure, radiation_fraction, t_min, t_max)
+
+# Step 19: Calculate net radiation
+rad_net <- calc_net_radiation(rad_sw, rad_lw)
+
+# Final Step: Calculate ETo
+eto = ((0.408 * svp_slope * (rad_net - 0)) + (psy * (900 / (t_mean + 273)) * (ws * (sat_vapor_pressure - actual_vapor_pressure)))) /
+  (svp_slope + psy * (1 + 0.34 * ws))
 ```
 
 
@@ -77,9 +166,11 @@ Using our example, we get:
 $$
 R_s [MJ m^{-2} day^{-1}] = 255.4398 * 3600 * 24 * 1e-6 = `r  round(255.4398 * 3600 * 24 * 1e-6, 3)` [MJ m^{-2} day^{-1}]
 $$
+`ETo` provides the `wm2_to_mj()` function, which does this calculation for the user. 
+
 
 ## Step 3: Adjust Wind Speed Based on Height of Observation
-The Penman-Monteith requires wind speed measured at 2 meters above the ground surface for ET<sub>o</sub> calculation. Because wind speeds measured from taller heights tend to be larger than 2-meter wind speeds, we need to adjust the observations using the following equation: 
+The Penman-Monteith method requires wind speed measured at 2 meters above the ground surface for ET<sub>o</sub> calculation. Because wind speeds measured from taller heights tend to be larger than 2-meter wind speeds, we need to adjust the observations using the following equation: 
 
 $$
 u_2 = u_2 * \frac{4.87}{log(67.8 * observation\_height - 5.42)}
@@ -88,8 +179,231 @@ Using our example:
 $$
 u_2 = 2.7778 * \frac{4.87}{log(67.8 * 10 - 5.42)} = `r adjust_wind_speed(2.7778, 10) |> round(4)`
 $$
-`ETo` provides the `adjust_wind_speed` function, which does this calculation for the user. 
+`ETo` provides the `adjust_wind_speed()` function, which does this calculation for the user. 
 
+## Step 4: Calculate the Slope of the Saturation Vapor Pressure Curve ($\Delta$)
+The saturation vapor pressure of the air changes with temperature. The slope of this relationship represents how effectively moisture can be wicked from the plant or soil surface into the air. This in turn affects the rate of ET<sub>o</sub>. $\Delta$ is defined as follows: 
+
+$$
+\Delta = \frac{4098 * [0.6108 * exp(\frac{17.27 * T_{mean}}{T_{mean} + 237.3})]}{(T_{mean} + 237.3)^2}
+$$
+Using our example, we get:
+$$
+\Delta = \frac{4098 * [0.6108 * exp(\frac{17.27 * 16.9}{16.9 + 237.3})]}{(16.9 + 237.3)^2} = `r round(svp_slope, 3)`
+$$
+`ETo` provides the `calc_svp_slope()` function, which does the calculation for the user. 
+
+## Step 5: Calculate Atmospheric Pressure ($P$)
+Atmospheric pressure has an effect on how much ET can occur. At lower pressures ET increases slightly, due to less force being exerted on the earth's surface[^2]. In the absence of measured pressure data, it can be estimated using elevation:
+
+$$
+P = 101.3 * [\frac{293 - 0.0065*z}{293}]^5.26
+$$
+Using our example, we get:
+$$
+P = 101.3 * [\frac{293 - 0.0065*`r elev`}{293}]^5.26 = `r round(pressure, 3)`
+$$
+`ETo` provides the `calc_pressure()` function, which does the calculation for the user.
+
+# Step 6: Calculate the Psychrometric Constant ($\gamma$)
+Zotarelli et al (2010) explain $\gamma$ as relating "the partial pressure of water in air to the air temperature so that vapor pressure can be estimated using paired dry and wet thermometer bulb temperature readings. Another way to describe the psychrometric constant is the ratio of specific heat of moist air at constant pressure to latent heat of vaporization. It is calculated as:
+
+$$
+\gamma = \frac{C_p*P}{\epsilon * \lambda} = 0.000665 * P
+$$
+where: 
+
+- $\gamma$ is the psychrometric constant,  kPa °C<sup>-1</sup>.
+- $C_p$ is the specific heat at a constant pressure, 1.013 10<sup>-3</sup>, MJ kg<sup>-1</sup> °C<sup>-1</sup>.
+- $P$ is the atmospheric pressure, kPa.
+- $\epsilon$ is the ratio of the molecular weight of water vapor to dry air, 0.622.
+- $\lambda$ is the latent heat of vaporization, 2.45, MJ kg<sup>-1</sup>
+
+Using our example: 
+
+$$
+\gamma = \frac{C_p*`r pressure`}{\epsilon * \lambda} = `r round(psy, 3)`
+$$
+`ETo` provides the `calc_psychrometric_constant()` function, which does the calculation for the user.
+
+## Steps 7, 8 and 9 outlined in Zotarelli et al (2010) are skipped here, as they are all just sub-components of the main ET<sub>o</sub> equation.
+
+## Step 10: Calculate the Mean Saturation Vapor Pressure
+As described in step 4, the saturation vapor pressure is related to the air temperature. For a given temperature, the saturation vapor pressure can be calculated as:
+
+$$
+e_{(t)} = 0.6108 * exp[\frac{17.27 * T}{T + 237.3}]
+$$
+
+Where:
+
+- $e_{(t)}$ is the saturation vapor pressure for a given temperature (kPa).
+- $T$ is the air temperature (°C).
+ 
+If daily minimum and maximum temperature are available, the daily average saturation vapor pressure should be calculated as the mean of the $e_{(T_{min})}$ and $e_{(T_{max})}$. Otherwise, $e_{(T_{avg})}$ can be used. Using our example, this means $e_s$ is calculated as:
+$$
+e_s = \frac{e_{(T_{min})} + e_{(T_{max})}}{2}
+$$
+Using our example, we get:
+$$
+e_s = \frac{`r round(sat_vp_tmin, 3)` + `r round(sat_vp_tmax, 3)`}{2} = `r round(sat_vapor_pressure, 3)`
+$$
+`ETo` provides the `calc_sat_vapor_pressure()` function, which does the calculation for the user.
+
+# Step 11: Calculate the Actual Vapor Pressure ($e_a$)
+The actual vapor pressure can be calculated using $e_s$ and daily $RH_{min}$ and $RH_{max}$ values:
+$$
+e_a = \frac{e_{(T_{min})} * [\frac{RH_{max}}{100}] + e_{(T_{max})} * [\frac{RH_{min}}{100}]}{2}
+$$
+In the absence of daily $RH_{min}$ and $RH_{max}$ observations, $e_a$ can be calculated using daily mean $RH$:
+$$
+e_a = \frac{RH_{mean}}{100} * e_s
+$$
+Since we have both $RH_{min}$ and $RH_{max}$, we can calculate $e_a$ as:
+$$
+e_a = \frac{`r round(sat_vp_tmin, 3)` * `r rh_max/100` + `r round(sat_vp_tmax)` * `r rh_min/100`}{2} = `r round(actual_vapor_pressure, 3)`
+$$
+`ETo` provides the `calc_act_vapor_pressure()` function, which does the calculation for the user.
+
+## Step 12: Calculate the Inverse Relative Earth-Sun Distance and the Solar Declination
+These variables, along with those calculated in the next few steps, are required to model the solar energy reaching earth's atmosphere. The inverse relative distance between the earth and sun ($d_r$) and the solar declination (the angle of the sun in the sky; $\delta$) are given by:
+$$
+d_r = 1 + 0.033 * cos[\frac{2 * \pi}{365} * J]
+$$
+$$
+\delta = 0.409 * sin[\frac{2*\pi}{365} * J - 1.39]
+$$
+Where: 
+
+- J is the julian day (day of the year) ranging between 1 and 365 (366 for leap years).
+
+Using our example, we calculate $d_r$ and $\delta$ as:
+$$
+d_r = 1 + 0.033 * cos[\frac{2 * \pi}{365} * `r days`] = `r inverse_distance`
+$$
+$$
+\delta = 0.409 * sin[\frac{2*\pi}{365} * `r days` - 1.39] = `r declination`
+$$
+`ETo` provides the `calc_solar_declination()` and `calc_inverse_relative_distance()` functions, which do the calculations for the user.
+
+## Step 13: Convert Latitude ($\phi$) from Decimal Degrees to Radians
+To be compatible with the variables we just created, the latitude must be in units of radians:
+$$
+\phi [rad] = \frac{\pi}{180} * \phi [decimal\ degrees]
+$$
+In our example, this gives us:
+$$
+\phi [rad] = \frac{\pi}{180} * 50.8 = `r round(lat, 3)`
+$$
+`ETo` provides the `lat_to_radians()` function, which does the calculation for the user.
+
+## Step 14: Calculate the Sunset Hour Angle ($\omega_s$)
+The sunset hour angle is calculated using the latitude and the declination:
+$$
+\omega_s = arccos[-tan(\phi) * tan(\delta)]
+$$
+In our example: 
+$$
+\omega_s = arccos[-tan(`r round(lat, 3)`) * tan(`r round(declination, 3)`)] = `r round(sunset_hour_angle, 3)`
+$$
+`ETo` provides the `calc_sunset_hour_angle()` function, which does the calculation for the user.
+
+## Step 15: Calculate Extraterrestrial Radiation ($R_a$)
+The extraterrestrial radiation is the amount of radiation that hits the earth's atmosphere and varies with the time of the year and latitude. It is calculated as:
+$$
+R_a = \frac{24 * 60}{\pi}*G_{sc}*d_r*[(\omega_s * sin(\phi)*sin(\delta)) + (cos(\phi) * cos(\delta) * sin(\omega_s))]
+$$
+Where:
+
+- $R_a$ is the extraterrestrial radiation (MJ M<sup>-2</sup> day<sup>-1</sup>)
+- $G_{sc}$ is the solar constant of 0.082 MJ M<sup>-2</sup> min<sup>-1</sup>
+
+Using our example, this gives:
+$$
+\begin{multline}
+R_a = \\
+\frac{24 * 60}{\pi}*G_{sc}*`r round(inverse_distance, 3)`*[(`r round(sunset_hour_angle, 3)` * sin(`r round(lat, 3)`)*sin(`r round(declination, 3)`)) + (cos(`r round(lat, 3)`) * cos(`r round(declination, 3)`) * sin(`r round(sunset_hour_angle, 3)`))] = \\
+`r round(extraterrestrial_rad, 3)`
+\end{multline}
+$$
+`ETo` provides the `calc_extraterrestrial_rad()` function, which does the calculation for the user.
+
+## Step 16: Calculate Clear Sky Solar Radiation ($R_{so}$)
+The extraterrestrial radiation calculated in the previous step can be scaled to radiation received at the Earth's surface under a clear sky:
+
+$$
+R_{so} = (0.75 + 2e10^{-5}*z)*R_a
+$$
+Where z is the elevation above sea level in meters. Using our example:
+$$
+R_{so} = (0.75 + 2e10^{-5}*`r elev`)*`r round(extraterrestrial_rad, 3)` = `r round(clear_sky_radiation, 3)`
+$$
+`ETo` provides the `calc_clear_sky_radiation()` function, which does the calculation for the user.
+
+## Step 17: Calculate Net Shortwave Solar Radiation ($R_{ns}$)
+The net solar radiation is calculated using daily incoming shortwave radiation calculated in step 2:
+$$
+R_{ns} = (1-\alpha)*R_s
+$$
+Where:
+
+- $R_{ns}$ is the net incoming shortwave radiation (MJ M<sup>-2</sup> day<sup>-1</sup>).
+- $\alpha$ is the crop surface albedo. This defaults to 0.23, but can be adjusted with the `reference` argument. 
+- $R_s$ is the incoming shortwave solar radiation (MJ M<sup>-2</sup> day<sup>-1</sup>)
+
+In our example:
+
+$$
+R_{ns} = (1-0.23)*`r round(rad_in, 3)`
+$$
+
+`ETo` provides the `calc_shortwave_raidation()` function, which does the calculation for the user.
+
+## Step 18: Calculate Net Outgoing Longwave Solar Radiation ($R_{nl}$)
+The Stefan-Boltzmann law states that radiation leaving earth's surface is proportional to temperature raised to the fourth power. As such, we define $R_{nl}$ as follows:
+$$
+R_{nl} = \sigma*[\frac{(T_{max}+273.16)^4 + (T_{min}+273.16)^4}{2}] * (0.34 - 0.14*\sqrt{e_a}) * (1.35 * \frac{R_s}{R_{so}}-0.35))
+$$
+Where: 
+
+- $R_{nl}$ is the net outgoing longwave radiation (MJ M<sup>-2</sup> day<sup>-1</sup>).
+- $\sigma$ is the Stefan-Boltzmann constant (4.903 * 10<sup>-9</sup>; MJ K<sup>-4</sup> M<sup>-2</sup> day<sup>-1</sup>)
+
+Using our example, we get:
+
+
+$$
+R_{nl} = \sigma*[\frac{(`r t_max`+273.16)^4 + (`r t_min`+273.16)^4}{2}] * (0.34 - 0.14*\sqrt{`r round(actual_vapor_pressure, 3)`}) * (1.35 * \frac{`r round(rad_sw, 3)`}{`r round(clear_sky_radiation, 3)`}-0.35))
+$$
+$$
+= `r round(rad_lw, 3)`
+$$
+
+Note that if only $T_{mean}$ temperature data are available, $(T_{mean} + 273.16)^4$ can be used in place of the $T_{min}$ and $T_{max}$ in the bracketed portion of the equation. `ETo` provides the `calc_longwave_radiation()` function, which does the calculation for the user.
+
+## Step 19: Calculate Net Radiation ($R_n$)
+Net radiation is simply the difference betwen incoming shortwave radiation and outgoing longwave radiation:
+
+$$
+R_n = R_{ns} - R_{nl}
+$$
+where $R_n$ has units of MJ M<sup>-2</sup> day<sup>-1</sup>. Using our example: 
+$$
+R_n = `r round(rad_sw, 3)` - `r round(rad_lw, 3)` = `r round(rad_net, 3)`
+$$
+`ETo` provides the `calc_net_radiation()` function, which does the calculation for the user.
+
+## Step 20: Calculate ET<sub>o</sub>
+Now we have all the components needed to calculate ET<sub>o</sub>. Recall that our equation for calculating ET<sub>o</sub> is 
+$$
+ET_o = \frac{0.408 \Delta (R_n - G) + \gamma \frac{900}{T + 273} u_2 (e_s - e_a)}{\Delta + \gamma (1 + 0.34 u_2)}
+$$
+We have not calculated the soil heat flux ($G$), as it is assumed to be zero at a daily time step. Finally, plugging in the values from our example:
+$$
+ET_o = \frac{0.408 * `r round(svp_slope, 3)`  * (`r round(rad_net, 3)` - 0) + `r round(psy, 3)` * \frac{900}{`r t_mean` + 273} * `r round(ws, 3)` * (`r round(sat_vapor_pressure, 3)` - `r round(actual_vapor_pressure, 3)`)}{`r round(svp_slope, 3)` + `r round(psy, 3)` * (1 + 0.34 * `r round(ws, 3)`)} = `r round(eto, 3)`
+$$
+which gives $ET_o$ in millimeters. Luckily, you don't have to do all of these steps if you want to calculate $ET_o$! `ETo` provides the `etr_penman_monteith()` function that does all of these calculations under the hood. 
+
+# References
 [^1]: [https://www.fao.org/3/X0490E/x0490e05.htm](https://www.fao.org/3/X0490E/x0490e05.htm)
-[^2]: [https://unpkg.com/node-red-contrib-evapotranspiration@1.0.1/alogorithms/evapotranspiration%20ae45900.pdf](https://unpkg.com/node-red-contrib-evapotranspiration@1.0.1/alogorithms/evapotranspiration%20ae45900.pdf)
-
+[^2]: [Zotarelli, Lincoln, Michael D Dukes, Consuelo C Romero, Kati W Migliaccio, and Kelly T Morgan. 2010. “Step by Step Calculation of the Penman-Monteith Evapotranspiration (FAO-56 Method).” Institute of Food and Agricultural Sciences. University of Florida 8.](https://unpkg.com/node-red-contrib-evapotranspiration@1.0.1/alogorithms/evapotranspiration%20ae45900.pdf)

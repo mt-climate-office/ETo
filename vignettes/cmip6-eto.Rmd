@@ -1,0 +1,35 @@
+---
+title: "cmip6-eto"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{cmip6-eto}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(ETo)
+library(magrittr)
+
+# t_min = terra::rast("/home/cbrust/data/test/eto_test/tasmin_day_ACCESS-ESM1-5_historical_r1i1p1f1_gn_1950.nc") - 273.15
+# t_max = terra::rast("/home/cbrust/data/test/eto_test/tasmax_day_ACCESS-ESM1-5_historical_r1i1p1f1_gn_1950.nc") - 273.15
+# srad = terra::rast("/home/cbrust/data/test/eto_test/rsds_day_ACCESS-ESM1-5_historical_r1i1p1f1_gn_1950.nc")
+# rh = terra::rast("/home/cbrust/data/test/eto_test/hurs_day_ACCESS-ESM1-5_historical_r1i1p1f1_gn_1950_v1.1.nc") %>% 
+#   terra::clamp(lower=0, upper=100)
+# ws = terra::rast("/home/cbrust/data/test/eto_test//sfcWind_day_ACCESS-ESM1-5_historical_r1i1p1f1_gn_1950.nc")
+# 
+# eto = calc_etr_spatial(
+#   t_min = t_min, t_max = t_max, srad = srad, rh = rh, ws = ws, 
+#   wind_height=10, reference = 0.23
+# )
+# 
+# other_eto = terra::rast("/home/cbrust/data/test/eto_test//eto_day_ACCESS-ESM1-5_historical_r1i1p1f1_gn_1950_v1.1.nc" )
+```
+
