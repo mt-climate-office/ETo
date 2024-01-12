@@ -1,6 +1,6 @@
 Package: ETo
 Title: Daily Calculation of Reference ET
-Version: 0.0.0.9000
+Version: 1.0.0
 Authors@R: 
     person("Colin", "Brust", , "colin.brust@mso.umt.edu", role = c("aut", "cre"))
 Description: Utility functions for calculating point-based and spatial 
