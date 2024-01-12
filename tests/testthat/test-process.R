@@ -1,6 +1,6 @@
 test_that("Getting point elevation works.", {
   elev <- get_elev_from_point(47, -115)
-  expect_equal(elev, 1466.06)
+  expect_equal(elev, 1606)
 })
 
 test_that("Getting raster elevation works.", {

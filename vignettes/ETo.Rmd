@@ -2,7 +2,7 @@
 title: "Calculating Daily Penman-Monteith Reference ET"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{fao-pm-eto}
+  %\VignetteIndexEntry{ETo}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

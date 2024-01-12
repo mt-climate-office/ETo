@@ -20,7 +20,7 @@
 get_elev_from_point <- function(lat, lon) {
   elev <- data.frame(x = lon, y = lat) |>
     sf::st_as_sf(coords = c("x", "y"), crs = 4326) |>
-    elevatr::get_elev_point()
+    elevatr::get_elev_point(src="aws")
 
   return(elev$elevation)
 }
@@ -53,7 +53,7 @@ get_elev_from_raster <- function(r, z, verbose = FALSE) {
     terra::rast() |>
     terra::as.polygons() |>
     sf::st_as_sf() |>
-    elevatr::get_elev_raster(z = z, verbose = verbose) |>
+    elevatr::get_elev_raster(z = z, verbose = verbose, src = "aws") |>
     terra::rast() |>
     terra::project(r)
 }

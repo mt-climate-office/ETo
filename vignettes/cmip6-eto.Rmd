@@ -1,5 +1,5 @@
 ---
-title: "Using `ETo` on Raster Data"
+title: "Using ETo on Raster Data"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{cmip6-eto}
@@ -47,12 +47,18 @@ penman <- etr_penman_monteith(
   rh = rh, rh_min = NULL, rh_max = NULL, ws = ws,
   days=days, lat=lat, reference = 0.23, elev = elev
 )
+```
+If you don't want to create the elevation, day of year, and latitude grids yourself, you can also use the `calc_etr_spatial()` function, and it will handle all of that for you:
 
+```{r etr_spatial}
 # Calculate timeseries of Hargreaves
 hargreaves <- calc_etr_spatial(
-  t_mean = tmean, t_max = tmax, t_min = tmin, method = "hargreaves", elev = elev
+  t_mean = tmean, t_max = tmax, t_min = tmin, method = "hargreaves", z = 3
 )
+```
 
+Now that we have calculated ET<sub>o</sub>
+```{r compare}
 diff <- penman - hargreaves
 
 # Plot the difference (in mm) between the two methods.
