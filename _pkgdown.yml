@@ -7,5 +7,5 @@ navbar:
   components:
     github:
       icon: fa-github
-      href: https://https://github.com/mt-climate-office/ETo
+      href: https://github.com/mt-climate-office/ETo
       aria-label: GitHub

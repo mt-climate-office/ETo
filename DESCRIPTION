@@ -1,9 +1,10 @@
 Package: ETo
 Title: Daily Calculation of Reference ET
 Version: 1.0.0
-Authors@R: 
-    person("Colin", "Brust", , "colin.brust@mso.umt.edu", role = c("aut", "cre"))
+Authors@R: c(
+    person("Colin", "Brust", , "colin.brust@mso.umt.edu", role = c("aut", "cre")),
     person("Kyle", "Bocinsky", ,"kyle.bocinsky@umontana.edu", role = c("aut", "ctb"))
+  )
 Description: Utility functions for calculating point-based and spatial 
     daily reference ET.
 License: MIT + file LICENSE
