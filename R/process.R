@@ -91,7 +91,6 @@ get_days_from_raster <- function(r) {
 #' @export
 #'
 #' @examples
-#' @examples
 #' \dontrun{
 #' r <- terra::rast(rh)
 #' get_lat_from_raster(r)
