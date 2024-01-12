@@ -197,11 +197,11 @@ $$
 Atmospheric pressure has an effect on how much ET can occur. At lower pressures ET increases slightly, due to less force being exerted on the earth's surface[^2]. In the absence of measured pressure data, it can be estimated using elevation:
 
 $$
-P = 101.3 * [\frac{293 - 0.0065*z}{293}]^5.26
+P = 101.3 * [\frac{293 - 0.0065*z}{293}]^{5.26}
 $$
 Using our example, we get:
 $$
-P = 101.3 * [\frac{293 - 0.0065*`r elev`}{293}]^5.26 = `r round(pressure, 3)`
+P = 101.3 * [\frac{293 - 0.0065*`r elev`}{293}]^{5.26} = `r round(pressure, 3)`
 $$
 `ETo` provides the `calc_pressure()` function, which does the calculation for the user.
 
